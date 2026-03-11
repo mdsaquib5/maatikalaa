@@ -1,0 +1,257 @@
+/* <= 1820px */
+@media (max-width: 1820px) {}
+
+/* <= 1600px */
+@media (max-width: 1600px) {}
+
+/* <= 1440px */
+@media (max-width: 1440px) {}
+
+/* <= 1200px */
+@media (max-width: 1200px) {
+
+    /* Header */
+    .header__nav-link-text {
+        font-size: 0.8rem;
+    }
+
+    .header__nav-link {
+        padding: 6px 10px;
+    }
+}
+
+/* <= 1024px */
+@media (max-width: 1024px) {
+
+    /* Header — switch to hamburger */
+    .header__nav {
+        display: none;
+    }
+
+    .header__hamburger {
+        display: flex;
+    }
+
+    /* About */
+    .about-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+
+    .process-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .about-hero {
+        height: 50vh;
+    }
+
+    /* Shop */
+    .shop-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 30px;
+    }
+
+    .shop-search {
+        max-width: 100%;
+    }
+
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Craft */
+    .partner-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .benefits-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+}
+
+/* <= 992px */
+@media (max-width: 992px) {
+
+    /* Header */
+    .header__inner {
+        height: 64px;
+    }
+
+    /* Hero */
+    .hero__title {
+        font-size: clamp(3.5rem, 6vw, 4.5rem);
+    }
+
+    .hero__content {
+        padding-inline: 20px;
+    }
+
+    /* Contact */
+    .contact-container {
+        grid-template-columns: 1fr;
+        gap: 60px;
+    }
+
+    .contact-info {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .contact-info__desc {
+        margin-inline: auto;
+    }
+}
+
+/* <= 768px */
+@media (max-width: 768px) {
+
+    /* Header */
+    .header__inner {
+        height: 60px;
+    }
+
+    .header__drawer {
+        padding-top: 88px;
+    }
+
+    .header__drawer-link {
+        font-size: 1rem;
+        padding: 12px 14px;
+    }
+
+    /* Hero */
+    .hero__title {
+        font-size: clamp(2.8rem, 8vw, 3.5rem);
+        margin-bottom: 16px;
+        letter-spacing: -1px;
+    }
+
+    .hero__text {
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+
+    .hero__brand-chip {
+        padding: 6px 12px;
+        margin-bottom: 24px;
+        font-size: 0.75rem;
+    }
+}
+
+/* <= 576px */
+@media (max-width: 576px) {
+
+    /* Header */
+    .header__inner {
+        height: 56px;
+    }
+
+    .header__logo-img {
+        height: 32px;
+    }
+
+    .header__drawer {
+        width: 100vw;
+        border-left: none;
+        padding-inline: 24px;
+    }
+
+    /* Hero */
+    .hero {
+        min-height: 560px;
+    }
+
+    .hero__title {
+        font-size: clamp(2.2rem, 10vw, 2.8rem);
+        letter-spacing: -0.5px;
+        margin-bottom: 12px;
+    }
+
+    .hero__text {
+        font-size: 0.92rem;
+        line-height: 1.6;
+        opacity: 0.8;
+    }
+
+    /* Contact */
+    .contact-page {
+        padding-top: 100px;
+        padding-bottom: 60px;
+    }
+
+    .contact-info__title {
+        font-size: 2.8rem;
+    }
+
+    .contact-form-wrapper {
+        padding: 30px 24px;
+    }
+
+    /* About */
+    .about-section {
+        padding: 60px 0;
+    }
+
+    .about-hero__title {
+        font-size: 3.5rem;
+    }
+
+    .process-card {
+        padding: 32px 24px;
+    }
+
+    /* Shop */
+    .shop-page {
+        padding-top: 100px;
+    }
+
+    .shop-header {
+        margin-bottom: 40px;
+    }
+
+    .product-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-view__modal {
+        grid-template-columns: 1fr;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .quick-view__info-side {
+        padding: 40px 24px;
+    }
+
+    /* Craft */
+    .craft-page {
+        padding-top: 100px;
+    }
+
+    .craft-hero {
+        margin-bottom: 50px;
+    }
+
+    .partner-card {
+        padding: 40px 24px;
+    }
+
+    .benefits-section {
+        padding: 60px 20px;
+        margin-bottom: 60px;
+    }
+
+    .benefit-item__title {
+        font-size: 1.15rem;
+    }
+
+    .craft-hero__title {
+        font-size: 3rem;
+    }
+}
