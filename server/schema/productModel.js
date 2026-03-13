@@ -29,12 +29,21 @@ const productSchema = new mongoose.Schema(
             required: true
         },
 
-        sizes: [
-            {
-                type: String,
-                enum: ["S", "M", "L"]
+        sizes: {
+            type: [String],
+            enum: ["S", "M", "L"],
+            set: function (val) {
+                if (typeof val === 'string') {
+                    const trimmed = val.trim();
+                    if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+                        try { return JSON.parse(trimmed); } catch (e) { return []; }
+                    }
+                    if (trimmed === "" || trimmed === "undefined") return [];
+                    return trimmed.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+                }
+                return val;
             }
-        ],
+        },
 
         stock: {
             type: Number,

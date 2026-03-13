@@ -43,25 +43,6 @@ export const addProduct = async (req, res) => {
             });
         }
 
-        // Robust Parsing for Sizes
-        let parsedSizes = [];
-        if (sizes) {
-            try {
-                if (typeof sizes === 'string') {
-                    const trimmed = sizes.trim();
-                    if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
-                        parsedSizes = JSON.parse(trimmed);
-                    } else if (trimmed !== "" && trimmed !== "undefined") {
-                        parsedSizes = trimmed.split(',').map(s => s.trim());
-                    }
-                } else if (Array.isArray(sizes)) {
-                    parsedSizes = sizes;
-                }
-            } catch (err) {
-                parsedSizes = [];
-            }
-        }
-
         const stockCount = Number(stock);
         const product = await Product.create({
             sellerId: req.seller._id,
@@ -69,7 +50,7 @@ export const addProduct = async (req, res) => {
             productName,
             description,
             price: Number(price),
-            sizes: parsedSizes,
+            sizes, // Model handles parsing via setter
             stock: stockCount,
             isOutOfStock: stockCount === 0,
             hotProduct: String(hotProduct).toLowerCase() === 'true',
@@ -120,7 +101,6 @@ export const getProducts = async (req, res) => {
 }
 
 export const deleteProduct = async (req, res) => {
-
     try {
 
         const { id } = req.params;
@@ -161,9 +141,9 @@ export const updateStock = async (req, res) => {
 
         const product = await Product.findOneAndUpdate(
             { _id: id, sellerId: req.seller._id },
-            { 
+            {
                 stock: stockCount,
-                isOutOfStock: stockCount === 0 
+                isOutOfStock: stockCount === 0
             },
             { returnDocument: 'after' }
         );
