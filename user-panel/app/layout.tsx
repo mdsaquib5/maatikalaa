@@ -8,6 +8,9 @@ import Providers from "./components/providers/Providers";
 export const metadata: Metadata = {
   title: "Maatikalaa — Handcrafted Muds Ware",
   description: "Discover the art of handcrafted muds ware. Maatikalaa brings you premium, earthy, artisan pottery and ceramic products.",
+  icons: {
+    icon: "/logo.png",
+  },
 };
 
 export default function RootLayout({
