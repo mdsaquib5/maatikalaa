@@ -122,8 +122,8 @@ export const deleteProduct = async (req, res) => {
         });
 
     } catch (error) {
-
-        res.status(500).json({
+        console.log(error);
+        return res.status(500).json({
             success: false,
             message: error.message
         })
@@ -155,14 +155,15 @@ export const updateStock = async (req, res) => {
             });
         }
 
-        res.json({
+        return res.json({
             success: true,
             message: `Stock updated. Product is now ${product.isOutOfStock ? 'Out of Stock' : 'In Stock'}`,
             product
         });
 
     } catch (error) {
-        res.status(500).json({
+        console.log(error);
+        return res.status(500).json({
             success: false,
             message: error.message
         });

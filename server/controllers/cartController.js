@@ -12,12 +12,13 @@ export const getCart = async (req, res) => {
             cart = { items: [], version: 1 };
         }
 
-        res.json({
+        return res.json({
             success: true,
             cart
         });
     } catch (error) {
-        res.status(500).json({
+        console.log(error);
+        return res.status(500).json({
             success: false,
             message: error.message
         });
@@ -56,9 +57,9 @@ export const addItem = async (req, res) => {
             if (itemIndex > -1) {
                 cart.items[itemIndex].qty += 1;
             } else {
-                cart.items.push({ 
-                    productId: new mongoose.Types.ObjectId(productId), 
-                    qty: 1, 
+                cart.items.push({
+                    productId: new mongoose.Types.ObjectId(productId),
+                    qty: 1,
                     price,
                     sellerName
                 });
@@ -74,7 +75,8 @@ export const addItem = async (req, res) => {
             cart: savedCart
         });
     } catch (error) {
-        res.status(500).json({
+        console.log(error);
+        return res.status(500).json({
             success: false,
             message: error.message
         });
@@ -104,7 +106,7 @@ export const decreaseItem = async (req, res) => {
             }
             cart.version += 1;
             await cart.save();
-            
+
             res.json({
                 success: true,
                 message: "Quantity decreased",
@@ -117,7 +119,8 @@ export const decreaseItem = async (req, res) => {
             });
         }
     } catch (error) {
-        res.status(500).json({
+        console.log(error);
+        return res.status(500).json({
             success: false,
             message: error.message
         });
@@ -149,13 +152,14 @@ export const removeItem = async (req, res) => {
                 cart
             });
         } else {
-            res.status(404).json({
+            return res.status(404).json({
                 success: false,
                 message: "Item not found in cart"
             });
         }
     } catch (error) {
-        res.status(500).json({
+        console.log(error);
+        return res.status(500).json({
             success: false,
             message: error.message
         });
