@@ -1,4 +1,6 @@
 import Order from "../schema/orderModel.js"
+import Cart from "../schema/cartModel.js"
+import Product from "../schema/productModel.js"
 import razorpay from "../configs/razorpay.js"
 import crypto from "crypto"
 
@@ -18,6 +20,8 @@ export const createOrder = async (req, res) => {
         })
 
         if (paymentMethod === "COD") {
+
+            await Cart.findOneAndUpdate({ userId: req.user._id }, { items: [] })
 
             return res.json({
                 success: true,
@@ -47,6 +51,76 @@ export const createOrder = async (req, res) => {
         })
 
     } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        })
+
+    }
+
+}
+
+export const getSellerOrders = async (req, res) => {
+
+    try {
+
+        const sellerId = req.seller._id;
+
+        // Find all products belonging to this seller
+        const products = await Product.find({ sellerId }).select("_id");
+        const productIds = products.map(p => p._id);
+
+        // Find orders containing any of these products
+        const orders = await Order.find({ "items.productId": { $in: productIds } })
+            .populate("userId", "name email")
+            .populate("items.productId")
+            .sort({ createdAt: -1 });
+
+        // Filter items in each order to only show what belongs to this seller
+        const sellerOrders = orders.map(order => {
+            const sellerItems = order.items.filter(item =>
+                item.productId && item.productId.sellerId.toString() === sellerId.toString()
+            );
+
+            return {
+                ...order._doc,
+                items: sellerItems
+            };
+        });
+
+        res.json({
+            success: true,
+            orders: sellerOrders
+        });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+
+}
+
+export const getUserOrders = async (req, res) => {
+
+    try {
+
+        const userId = req.user._id
+
+        const orders = await Order.find({ userId }).populate("items.productId").sort({ createdAt: -1 })
+
+        res.json({
+
+            success: true,
+            orders
+
+        })
+
+    } catch (error) {
+
         console.log(error);
         return res.status(500).json({
             success: false,
@@ -94,10 +168,19 @@ export const verifyPayment = async (req, res) => {
             razorpayOrderId: razorpay_order_id
         })
 
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: "Order not found"
+            })
+        }
+
         order.paymentStatus = "PAID"
         order.razorpayPaymentId = razorpay_payment_id
 
         await order.save()
+
+        await Cart.findOneAndUpdate({ userId: req.user._id }, { items: [] })
 
         res.json({
 
