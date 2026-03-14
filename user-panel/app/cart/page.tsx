@@ -12,12 +12,12 @@ export default function CartPage() {
 
     if (items.length === 0) {
         return (
-            <main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg-dark)', color: '#fff' }}>
-                <div style={{ textAlign: 'center' }}>
-                    <div style={{ marginBottom: '24px', opacity: 0.2 }}><FiShoppingBag size={80} /></div>
-                    <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '16px' }}>Your Cart is Empty</h1>
-                    <p style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '32px' }}>Explore our collection and find something unique.</p>
-                    <Link href="/shop" style={{ background: '#fff', color: '#000', padding: '14px 32px', borderRadius: '12px', fontWeight: 700, textDecoration: 'none' }}>
+            <main className="full-page-center">
+                <div className="empty-state">
+                    <div className="empty-state__icon"><FiShoppingBag size={80} /></div>
+                    <h1 className="empty-state__title">Your Cart is Empty</h1>
+                    <p className="empty-state__text">Explore our collection and find something unique.</p>
+                    <Link href="/shop" className="theme-button">
                         Browse Gallery
                     </Link>
                 </div>
@@ -26,79 +26,87 @@ export default function CartPage() {
     }
 
     return (
-        <main style={{ minHeight: '100vh', background: 'var(--color-bg-dark)', color: '#fff', paddingTop: '120px', paddingBottom: '80px' }}>
+        <main className="theme-container">
             <div className="container">
-                <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '48px' }}>Your Collection</h1>
+                <h1 className="theme-title">Your Collection</h1>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '48px', alignItems: 'flex-start' }}>
+                <div className="two-col-grid">
                     
                     {/* Items List */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', background: 'rgba(255,255,255,0.05)', borderRadius: '24px', overflow: 'hidden' }}>
+                    <div className="item-list-container">
                         {items.map((item) => (
-                            <div key={`${item.id}-${item.size}`} style={{ background: 'rgba(20,20,20,0.6)', padding: '24px', display: 'flex', gap: '24px', alignItems: 'center' }}>
-                                <div style={{ width: '100px', height: '100px', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                    <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                </div>
-                                
-                                <div style={{ flex: 1 }}>
-                                    <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '4px' }}>{item.name}</h3>
-                                    {item.size && <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginBottom: '8px' }}>SIZE: {item.size}</p>}
-                                    <p style={{ fontSize: '1rem', fontWeight: 700 }}>₹{item.price.toLocaleString('en-IN')}</p>
-                                </div>
+                            <div key={`${item.id}-${item.size}`} className="theme-card">
+                                <div className="item-card-row">
+                                    <div className="item-card-img">
+                                        <img src={item.image} alt={item.name} />
+                                    </div>
+                                    
+                                    <div className="item-card-info">
+                                        <h3 className="item-card-title">{item.name}</h3>
+                                        {item.size && <span className="theme-badge">SIZE: {item.size}</span>}
+                                        <p className="item-card-price">₹{item.price.toLocaleString('en-IN')}</p>
+                                    </div>
 
-                                <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '4px' }}>
-                                    <button onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1), item.size)} style={{ background: 'none', border: 'none', color: '#fff', padding: '8px', cursor: 'pointer' }}><FiMinus size={14} /></button>
-                                    <span style={{ width: '30px', textAlign: 'center', fontWeight: 700, fontSize: '0.9rem' }}>{item.quantity}</span>
-                                    <button onClick={() => updateQuantity(item.id, item.quantity + 1, item.size)} style={{ background: 'none', border: 'none', color: '#fff', padding: '8px', cursor: 'pointer' }}><FiPlus size={14} /></button>
-                                </div>
+                                    <div className="quantity-control">
+                                        <button 
+                                            onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1), item.size)} 
+                                            className="quantity-control__btn"
+                                        >
+                                            <FiMinus size={14} />
+                                        </button>
+                                        <span className="quantity-control__value">{item.quantity}</span>
+                                        <button 
+                                            onClick={() => updateQuantity(item.id, item.quantity + 1, item.size)} 
+                                            className="quantity-control__btn"
+                                        >
+                                            <FiPlus size={14} />
+                                        </button>
+                                    </div>
 
-                                <button 
-                                    onClick={() => {
-                                        removeFromCart(item.id, item.size);
-                                        toast.success('Removed from cart');
-                                    }}
-                                    style={{ background: 'rgba(248,113,113,0.1)', border: 'none', color: '#F87171', width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                                >
-                                    <FiTrash2 size={16} />
-                                </button>
+                                    <button 
+                                        className="remove-btn"
+                                        onClick={() => {
+                                            removeFromCart(item.id, item.size);
+                                            toast.success('Removed from cart');
+                                        }}
+                                    >
+                                        <FiTrash2 size={16} />
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>
 
                     {/* Summary */}
-                    <div style={{ position: 'sticky', top: '120px' }}>
-                        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '32px' }}>
-                            <h2 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '24px' }}>Order Summary</h2>
+                    <aside className="sticky-sidebar">
+                        <div className="theme-card">
+                            <h2 className="item-card-title mb-24">Order Summary</h2>
                             
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', color: 'rgba(255,255,255,0.5)' }}>
-                                <span>Subtotal</span>
-                                <span>₹{totalAmount().toLocaleString('en-IN')}</span>
+                            <div className="summary-details">
+                                <div className="summary-row">
+                                    <span className="summary-row--label">Subtotal</span>
+                                    <span className="summary-row--value">₹{totalAmount().toLocaleString('en-IN')}</span>
+                                </div>
+                                <div className="summary-row">
+                                    <span className="summary-row--label">Shipping</span>
+                                    <span className="font-600" style={{ color: '#4ADE80' }}>FREE</span>
+                                </div>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px', color: 'rgba(255,255,255,0.5)' }}>
-                                <span>Shipping</span>
-                                <span style={{ color: '#4ADE80' }}>Calculated at next step</span>
-                            </div>
                             
-                            <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', marginBottom: '24px' }} />
-                            
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px' }}>
-                                <span style={{ fontSize: '1.2rem', fontWeight: 800 }}>Total</span>
-                                <span style={{ fontSize: '1.2rem', fontWeight: 800 }}>₹{totalAmount().toLocaleString('en-IN')}</span>
+                            <div className="summary-total">
+                                <span className="summary-total__label">Total</span>
+                                <span className="summary-total__value">₹{totalAmount().toLocaleString('en-IN')}</span>
                             </div>
 
                             <button 
                                 onClick={() => router.push('/checkout')}
-                                style={{
-                                    width: '100%', background: '#fff', color: '#000', borderRadius: '16px', padding: '18px',
-                                    fontWeight: 700, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center',
-                                    justifyContent: 'center', gap: '12px', transition: 'all 0.3s ease'
-                                }}
+                                className="theme-button w-full mt-32"
                             >
                                 PROCEED TO CHECKOUT
                                 <FiArrowRight />
                             </button>
                         </div>
-                    </div>
+                    </aside>
                 </div>
             </div>
         </main>

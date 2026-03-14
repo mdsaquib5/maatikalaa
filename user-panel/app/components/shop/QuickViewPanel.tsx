@@ -40,20 +40,20 @@ const QuickViewPanel: React.FC<QuickViewPanelProps> = ({ product, onClose }) => 
                 <div className="quick-view__info-side">
                     <span className="quick-view__tag">Featured Piece</span>
                     <h2 className="quick-view__title">{product.name}</h2>
-                    <div className="quick-view__price-row">
-                        <span>${product.price.toFixed(2)}</span>
+                    <div className="quick-view__price-row mb-24">
+                        <span className="text-xl font-800" style={{ color: 'var(--color-accent-primary)' }}>₹{product.price.toLocaleString('en-IN')}</span>
                         {product.discountPrice && (
-                            <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '1.2rem', fontWeight: 400 }}>
-                                ${product.discountPrice.toFixed(2)}
+                            <span className="text-body" style={{ textDecoration: 'line-through', fontSize: '1.1rem', fontWeight: 400 }}>
+                                ₹{product.discountPrice.toLocaleString('en-IN')}
                             </span>
                         )}
                     </div>
-                    <p className="quick-view__desc">
+                    <p className="quick-view__desc text-body" style={{ lineHeight: 1.7, marginBottom: '32px' }}>
                         {product.description}
                     </p>
 
-                    <button className="quick-view__btn" onClick={() => console.log("Added from quick view")}>
-                        Add to Cart
+                    <button className="theme-button w-full" onClick={() => console.log("Added from quick view")}>
+                        View Details
                     </button>
                 </div>
             </div>

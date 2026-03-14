@@ -61,7 +61,7 @@ export default function SignupPage() {
                 </div>
 
                 {/* Badge */}
-                <div style={{ marginBottom: '12px' }}>
+                <div className="mb-24">
                     <span className="auth-badge">
                         <MdOutlinePerson size={12} />
                         Join Maatikala
@@ -72,7 +72,7 @@ export default function SignupPage() {
                 <p className="auth-subtitle">Join our community of art and craft lovers.</p>
 
                 {error && (
-                    <div className="auth-error" style={{ marginBottom: '16px' }}>
+                    <div className="auth-error mb-24">
                         <MdError />
                         {error}
                     </div>
@@ -153,8 +153,8 @@ export default function SignupPage() {
                     </button>
                 </form>
 
-                <div className="auth-divider" style={{ marginTop: '32px', marginBottom: '20px' }}>
-                    <span>or</span>
+                <div className="auth-divider mt-32">
+                    <span style={{ margin: '0 12px' }}>or</span>
                 </div>
 
                 <p className="auth-redirect">

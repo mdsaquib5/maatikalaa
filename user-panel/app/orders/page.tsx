@@ -18,68 +18,69 @@ export default function UserOrdersPage() {
 
     return (
         <ProtectedRoute>
-            <main style={{ minHeight: '100vh', background: 'var(--color-bg-dark)', color: '#fff', paddingTop: '120px', paddingBottom: '80px' }}>
+            <main className="theme-container">
                 <div className="container" style={{ maxWidth: '900px' }}>
-                    <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '40px' }}>Your Orders</h1>
+                    <h1 className="theme-title">Your Orders</h1>
 
                     {isLoading ? (
-                        <div style={{ textAlign: 'center', opacity: 0.5, padding: '100px' }}>Fetching your order history...</div>
+                        <div className="full-page-center" style={{ minHeight: 'auto', padding: '100px' }}>
+                             <div className="spinner mb-24" style={{ margin: '0 auto 20px' }} />
+                             Fetching your order history...
+                        </div>
                     ) : orders.length === 0 ? (
-                        <div style={{ textAlign: 'center', background: 'rgba(255,255,255,0.02)', padding: '80px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                            <FiPackage size={48} style={{ opacity: 0.2, marginBottom: '16px' }} />
-                            <p style={{ color: 'rgba(255,255,255,0.5)' }}>No orders placed yet.</p>
+                        <div className="empty-state theme-card" style={{ padding: '80px' }}>
+                            <FiPackage size={48} className="empty-state__icon" />
+                            <p className="text-body">No orders placed yet.</p>
                         </div>
                     ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                        <div className="flex flex-col gap-24">
                             {orders.map((order: any) => (
-                                <div key={order._id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '24px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px', alignItems: 'flex-start' }}>
+                                <div key={order._id} className="theme-card">
+                                    <div className="flex justify-between mb-24 align-start">
                                         <div>
-                                            <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', fontWeight: 700, letterSpacing: '1px' }}>ORDER #{order._id.slice(-6).toUpperCase()}</p>
-                                            <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)' }}>Placed on {new Date(order.createdAt).toLocaleDateString()}</p>
+                                            <p className="theme-section-label" style={{ marginBottom: '4px' }}>ORDER #{order._id.slice(-6).toUpperCase()}</p>
+                                            <p className="text-sm text-body">Placed on {new Date(order.createdAt).toLocaleDateString()}</p>
                                         </div>
-                                        <div style={{ 
-                                            display: 'flex', alignItems: 'center', gap: '8px', 
-                                            background: order.orderStatus === 'DELIVERED' ? 'rgba(74, 222, 128, 0.1)' : 'rgba(250, 204, 21, 0.1)', 
-                                            padding: '8px 16px', borderRadius: '100px',
-                                            border: `1px solid ${order.orderStatus === 'DELIVERED' ? 'rgba(74, 222, 128, 0.2)' : 'rgba(250, 204, 21, 0.2)'}`
-                                        }}>
-                                            {order.orderStatus === 'DELIVERED' ? <FiCheckCircle color="#4ADE80" /> : <FiCircle color="#FACC15" />}
-                                            <span style={{ 
-                                                fontSize: '0.8rem', fontWeight: 700, 
-                                                color: order.orderStatus === 'DELIVERED' ? '#4ADE80' : '#FACC15' 
-                                            }}>
+                                        <div className={`status-badge ${order.orderStatus === 'DELIVERED' ? 'status-badge--delivered' : 'status-badge--pending'}`}>
+                                            {order.orderStatus === 'DELIVERED' ? <FiCheckCircle /> : <FiCircle />}
+                                            <span>
                                                 {order.orderStatus || 'PLACED'}
                                             </span>
                                         </div>
                                     </div>
 
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                    <div className="order-item-list">
                                         {order.items.map((item: any, idx: number) => (
-                                            <div key={idx} style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                                                <div style={{ width: '60px', height: '60px', borderRadius: '12px', overflow: 'hidden', background: 'rgba(255,255,255,0.05)' }}>
-                                                    <img src={item.productId?.images[0]?.url || '/placeholder.png'} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            <div key={idx} className="order-product-row">
+                                                <div className="order-product-img">
+                                                    <img src={item.productId?.images[0]?.url || '/placeholder.png'} alt="" />
                                                 </div>
-                                                <div style={{ flex: 1 }}>
-                                                    <p style={{ fontWeight: 600 }}>{item.productId?.productName}</p>
-                                                    <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>Size: {item.size || 'N/A'} • Qty: {item.quantity || item.qty || 1}</p>
+                                                <div className="flex-1">
+                                                    <p className="font-600 text-heading">{item.productId?.productName}</p>
+                                                    <p className="text-sm text-body flex items-center gap-12">
+                                                        <span className="theme-badge" style={{ padding: '2px 8px', fontSize: '0.65rem' }}>{item.size || 'N/A'}</span>
+                                                        <span>Qty: {item.quantity || item.qty || 1}</span>
+                                                    </p>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
 
-                                    <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '20px 0' }} />
+                                    <div className="divider-line" style={{ margin: '20px 0' }} />
 
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                    <div className="flex justify-between items-center align-end">
                                         <div>
-                                            <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', marginBottom: '4px' }}>
-                                                Payment: <span style={{ color: '#fff' }}>{order.paymentStatus} via {order.paymentMethod}</span>
+                                            <p className="text-sm text-body" style={{ marginBottom: '4px' }}>
+                                                Payment: <span className="text-heading font-600">{order.paymentStatus} via {order.paymentMethod}</span>
                                             </p>
-                                            <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', maxWidth: '400px' }}>
-                                                Deliver to: {order.shippingAddress || 'N/A'} • {order.phone || ''}
+                                            <p className="text-sm text-muted" style={{ maxWidth: '400px' }}>
+                                                Deliver to: {order.shippingAddress || 'N/A'}
                                             </p>
                                         </div>
-                                        <p style={{ fontSize: '1.2rem', fontWeight: 800 }}>₹{order.totalAmount.toLocaleString('en-IN')}</p>
+                                        <div className="text-right">
+                                            <p className="text-xs text-muted" style={{ marginBottom: '2px' }}>Total Amount</p>
+                                            <p className="text-xl font-800 text-accent">₹{order.totalAmount.toLocaleString('en-IN')}</p>
+                                        </div>
                                     </div>
                                 </div>
                             ))}

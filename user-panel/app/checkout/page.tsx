@@ -105,54 +105,44 @@ export default function CheckoutPage() {
     return (
         <ProtectedRoute>
             <Script src="https://checkout.razorpay.com/v1/checkout.js" />
-            <main style={{ minHeight: '100vh', background: 'var(--color-bg-dark)', color: '#fff', paddingTop: '120px', paddingBottom: '80px' }}>
+            <main className="theme-container">
                 <div className="container" style={{ maxWidth: '1000px' }}>
-                    <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '40px' }}>Checkout</h1>
+                    <h1 className="theme-title">Checkout</h1>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '48px' }}>
+                    <div className="two-col-grid" style={{ gridTemplateColumns: '1fr 360px' }}>
                         
                         {/* Shipping & Payment */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-                            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '32px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-                                    <FiTruck size={20} color="#fff" />
-                                    <h2 style={{ fontSize: '1.2rem', fontWeight: 700 }}>Shipping Information</h2>
+                        <div className="flex flex-col gap-32">
+                            <div className="theme-card">
+                                <div className="flex items-center gap-12 mb-24">
+                                    <FiTruck size={20} color="var(--color-accent-primary)" />
+                                    <h2 className="item-card-title" style={{ marginBottom: 0 }}>Shipping Information</h2>
                                 </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
-                                    <input placeholder="Street Address" value={address} onChange={e => setAddress(e.target.value)} style={{ padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff' }} />
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                                        <input placeholder="City" value={city} onChange={e => setCity(e.target.value)} style={{ padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff' }} />
-                                        <input placeholder="Zip Code" value={zip} onChange={e => setZip(e.target.value)} style={{ padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff' }} />
+                                <div className="grid gap-16">
+                                    <input placeholder="Street Address" value={address} onChange={e => setAddress(e.target.value)} className="theme-input" />
+                                    <div className="grid grid-cols-2 gap-16">
+                                        <input placeholder="City" value={city} onChange={e => setCity(e.target.value)} className="theme-input" />
+                                        <input placeholder="Zip Code" value={zip} onChange={e => setZip(e.target.value)} className="theme-input" />
                                     </div>
-                                    <input placeholder="Phone Number" value={phone} onChange={e => setPhone(e.target.value)} style={{ padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff' }} />
+                                    <input placeholder="Phone Number" value={phone} onChange={e => setPhone(e.target.value)} className="theme-input" />
                                 </div>
                             </div>
 
-                            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '32px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-                                    <FiCreditCard size={20} color="#fff" />
-                                    <h2 style={{ fontSize: '1.2rem', fontWeight: 700 }}>Payment Method</h2>
+                            <div className="theme-card">
+                                <div className="flex items-center gap-12 mb-24">
+                                    <FiCreditCard size={20} color="var(--color-accent-primary)" />
+                                    <h2 className="item-card-title" style={{ marginBottom: 0 }}>Payment Method</h2>
                                 </div>
-                                <div style={{ display: 'flex', gap: '16px' }}>
+                                <div className="flex gap-16">
                                     <button 
                                         onClick={() => setPaymentMethod('RAZORPAY')}
-                                        style={{ 
-                                            flex: 1, padding: '16px', borderRadius: '12px', border: '2px solid', 
-                                            borderColor: paymentMethod === 'RAZORPAY' ? '#fff' : 'rgba(255,255,255,0.1)',
-                                            background: paymentMethod === 'RAZORPAY' ? 'rgba(255,255,255,0.1)' : 'transparent',
-                                            color: '#fff', cursor: 'pointer', fontWeight: 600
-                                        }}
+                                        className={`payment-method-btn ${paymentMethod === 'RAZORPAY' ? 'payment-method-btn--active' : ''}`}
                                     >
                                         Razorpay / Cards
                                     </button>
                                     <button 
                                         onClick={() => setPaymentMethod('COD')}
-                                        style={{ 
-                                            flex: 1, padding: '16px', borderRadius: '12px', border: '2px solid', 
-                                            borderColor: paymentMethod === 'COD' ? '#fff' : 'rgba(255,255,255,0.1)',
-                                            background: paymentMethod === 'COD' ? 'rgba(255,255,255,0.1)' : 'transparent',
-                                            color: '#fff', cursor: 'pointer', fontWeight: 600
-                                        }}
+                                        className={`payment-method-btn ${paymentMethod === 'COD' ? 'payment-method-btn--active' : ''}`}
                                     >
                                         Cash on Delivery
                                     </button>
@@ -161,35 +151,35 @@ export default function CheckoutPage() {
                         </div>
 
                         {/* Summary */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '32px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-                                    <FiPackage size={20} color="#fff" />
-                                    <h2 style={{ fontSize: '1.2rem', fontWeight: 700 }}>Summary</h2>
+                        <aside className="item-list-container">
+                            <div className="theme-card">
+                                <div className="flex items-center gap-12 mb-24">
+                                    <FiPackage size={20} color="var(--color-accent-primary)" />
+                                    <h2 className="item-card-title" style={{ marginBottom: 0 }}>Summary</h2>
                                 </div>
-                                {items.map(item => (
-                                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '0.9rem' }}>
-                                        <span style={{ color: 'rgba(255,255,255,0.6)' }}>{item.name} x {item.quantity}</span>
-                                        <span>₹{(item.price * item.quantity).toLocaleString('en-IN')}</span>
-                                    </div>
-                                ))}
-                                <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '20px 0' }} />
-                                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: '1.2rem' }}>
-                                    <span>Total</span>
-                                    <span>₹{totalAmount().toLocaleString('en-IN')}</span>
+                                <div className="summary-details">
+                                    {items.map(item => (
+                                        <div key={item.id} className="summary-row" style={{ fontSize: '0.9rem' }}>
+                                            <span className="summary-row--label">{item.name} x {item.quantity}</span>
+                                            <span className="summary-row--value">₹{(item.price * item.quantity).toLocaleString('en-IN')}</span>
+                                        </div>
+                                    ))}
                                 </div>
+
+                                <div className="summary-total">
+                                    <span className="summary-total__label">Total</span>
+                                    <span className="summary-total__value">₹{totalAmount().toLocaleString('en-IN')}</span>
+                                </div>
+
                                 <button 
                                     onClick={handleCheckout}
                                     disabled={loading}
-                                    style={{ 
-                                        width: '100%', background: '#fff', color: '#000', borderRadius: '16px', padding: '18px', 
-                                        fontWeight: 700, border: 'none', cursor: 'pointer', marginTop: '32px' 
-                                    }}
+                                    className="theme-button w-full mt-32"
                                 >
                                     {loading ? 'Processing...' : 'PLACE ORDER'}
                                 </button>
                             </div>
-                        </div>
+                        </aside>
                     </div>
                 </div>
             </main>

@@ -92,11 +92,11 @@ const Header = () => {
                     </ul>
                 </nav>
 
-                <div className="header__actions" style={{ display: 'flex', alignItems: 'center' }}>
-                    <Link href="/cart" className="header__nav-link" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <div className="header__actions">
+                    <Link href="/cart" className="header__nav-link header__cart-icon-wrap">
                         <FiShoppingCart size={20} />
                         {items.length > 0 && (
-                            <span style={{ position: 'absolute', top: '-8px', right: '-10px', background: '#fff', color: '#000', fontSize: '0.6rem', fontWeight: 800, width: '16px', height: '16px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span className="header__cart-badge">
                                 {items.length}
                             </span>
                         )}
@@ -104,11 +104,11 @@ const Header = () => {
 
                     <div className="header__auth-desktop">
                         {isAuthenticated ? (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                            <div className="flex items-center gap-16">
                                 <Link href="/orders" className="header__nav-link" title="My Orders">
                                     <FiUser size={20} />
                                 </Link>
-                                <button onClick={handleLogout} className="header__nav-link" style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+                                <button onClick={handleLogout} className="header__nav-link header__logout-btn">
                                     Logout
                                 </button>
                             </div>
@@ -149,12 +149,12 @@ const Header = () => {
                         </li>
                         <li className="header__drawer-item" style={{ animationDelay: `${(navLinks.length + 1) * 0.07}s` }}>
                             {isAuthenticated ? (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                <div className="flex flex-col gap-12">
                                     <Link href="/orders" className="header__drawer-link" onClick={() => handleNavClick('/orders')}>
                                         <span className="header__drawer-num">0{navLinks.length + 2}</span>
                                         My Orders
                                     </Link>
-                                    <button onClick={handleLogout} className="header__drawer-link" style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%' }}>
+                                    <button onClick={handleLogout} className="header__drawer-link header__logout-btn" style={{ textAlign: 'left', width: '100%' }}>
                                         <span className="header__drawer-num">0{navLinks.length + 3}</span>
                                         Logout
                                     </button>

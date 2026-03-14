@@ -254,4 +254,37 @@
     .craft-hero__title {
         font-size: 3rem;
     }
+
+    /* Cart / Checkout / Orders */
+    .two-col-grid {
+        grid-template-columns: 1fr !important;
+        gap: 32px !important;
+    }
+
+    .sticky-sidebar {
+        position: static !important;
+    }
+
+    .item-card-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .item-card-img {
+        width: 100% !important;
+        height: 200px !important;
+    }
+
+    .grid-cols-2 {
+        grid-template-columns: 1fr !important;
+    }
+
+    .theme-title {
+        font-size: 2.2rem !important;
+    }
+
+    .summary-total__value {
+        font-size: 1.5rem !important;
+    }
 }

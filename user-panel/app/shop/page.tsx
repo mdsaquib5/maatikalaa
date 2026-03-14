@@ -33,15 +33,16 @@ const ShopPage = () => {
                 {/* Header & Search */}
                 <header className="shop-header">
                     <div className="shop-header__info">
-                        <span className="shop-header__tag">The Collection</span>
-                        <h1 className="shop-header__title">Handcrafted Muds Ware.</h1>
+                        <span className="theme-badge mb-24">The Collection</span>
+                        <h1 className="theme-title" style={{ marginBottom: '0' }}>Handcrafted Muds Ware.</h1>
                     </div>
 
                     <div className="shop-search">
-                        <FiSearch className="shop-search__icon" />
+                        <FiSearch className="shop-search__icon" style={{ color: 'var(--color-accent-primary)' }} />
                         <input
                             type="text"
                             className="shop-search__input"
+                            style={{ fontFamily: 'inherit' }}
                             placeholder="Search our pieces..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -52,7 +53,7 @@ const ShopPage = () => {
                 {/* Grid */}
                 <div className="product-grid">
                     {isLoading ? (
-                        <div style={{ color: 'white', padding: '100px 0', fontSize: '1.2rem', textAlign: 'center', width: '100%' }}>
+                        <div className="full-page-center" style={{ minHeight: '300px', gridColumn: '1 / -1' }}>
                             Discovering artisan pieces...
                         </div>
                     ) : filteredProducts.length > 0 ? (
@@ -71,8 +72,8 @@ const ShopPage = () => {
                             />
                         ))
                     ) : (
-                        <div style={{ color: 'white', padding: '100px 0', fontSize: '1.2rem', textAlign: 'center', width: '100%' }}>
-                            No products found matching &quot;{searchTerm}&quot;
+                        <div className="empty-state" style={{ gridColumn: '1 / -1', padding: '100px 0' }}>
+                            <p className="text-body">No products found matching &quot;{searchTerm}&quot;</p>
                         </div>
                     )}
                 </div>

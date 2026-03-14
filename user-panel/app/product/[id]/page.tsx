@@ -23,8 +23,8 @@ export default function ProductDetailPage() {
         }
     });
 
-    if (isLoading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>Loading piece...</div>;
-    if (!data?.product) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>Piece not found</div>;
+    if (isLoading) return <div className="full-page-center">Loading piece...</div>;
+    if (!data?.product) return <div className="full-page-center">Piece not found</div>;
 
     const p = data.product;
 
@@ -46,31 +46,33 @@ export default function ProductDetailPage() {
     };
 
     return (
-        <main style={{ minHeight: '100vh', background: 'var(--color-bg-dark)', color: '#fff', paddingTop: '100px' }}>
+        <main className="theme-container">
             <div className="container">
                 <button 
                     onClick={() => router.back()}
-                    style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '40px' }}
+                    className="flex items-center gap-8 text-body font-600 mb-24"
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', marginBottom: '40px' }}
                 >
                     <FiChevronLeft /> Back to Shop
                 </button>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '60px', alignItems: 'flex-start' }}>
+                <div className="grid gap-32" style={{ gridTemplateColumns: '1fr 1fr', gap: '60px', alignItems: 'flex-start' }}>
                     
                     {/* Image Section */}
-                    <div style={{ position: 'sticky', top: '120px' }}>
-                        <div style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '24px', overflow: 'hidden', aspectRatio: '1/1', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div className="sticky-sidebar">
+                        <div className="theme-card" style={{ padding: '0', overflow: 'hidden', aspectRatio: '1/1' }}>
                             <img 
                                 src={p.images[0]?.url || '/placeholder.png'} 
                                 alt={p.productName} 
-                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                className="w-full h-full"
+                                style={{ objectFit: 'cover' }}
                             />
                         </div>
                         {p.images.length > 1 && (
-                            <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+                            <div className="flex gap-12" style={{ marginTop: '16px' }}>
                                 {p.images.slice(1).map((img: any, i: number) => (
-                                    <div key={i} style={{ width: '80px', height: '80px', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                        <img src={img.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <div key={i} className="theme-card" style={{ width: '80px', height: '80px', padding: '0', overflow: 'hidden' }}>
+                                        <img src={img.url} alt="" className="w-full h-full" style={{ objectFit: 'cover' }} />
                                     </div>
                                 ))}
                             </div>
@@ -79,36 +81,31 @@ export default function ProductDetailPage() {
 
                     {/* Details Section */}
                     <div>
-                        <span style={{ color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '2px', fontWeight: 700 }}>Artisan Crafted</span>
-                        <h1 style={{ fontSize: '3rem', fontWeight: 800, marginTop: '12px', marginBottom: '24px' }}>{p.productName}</h1>
+                        <span className="theme-badge mb-24">Artisan Crafted</span>
+                        <h1 className="theme-title" style={{ marginTop: '12px', marginBottom: '24px', fontSize: '3.5rem' }}>{p.productName}</h1>
                         
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
-                            <span style={{ fontSize: '1.5rem', fontWeight: 700 }}>₹{p.price.toLocaleString('en-IN')}</span>
-                            <span style={{ color: p.stock > 0 ? '#4ADE80' : '#F87171', fontSize: '0.85rem', fontWeight: 600 }}>
+                        <div className="flex items-center gap-24 mb-32">
+                            <span className="text-xl font-800" style={{ color: 'var(--color-accent-primary)' }}>₹{p.price.toLocaleString('en-IN')}</span>
+                            <span className={`status-badge ${p.stock > 0 ? 'status-badge--delivered' : 'status-badge--pending'}`}>
                                 {p.stock > 0 ? `In Stock (${p.stock} available)` : 'Sold Out'}
                             </span>
                         </div>
 
-                        <p style={{ color: 'rgba(255,255,255,0.6)', lineHeight: 1.8, fontSize: '1rem', marginBottom: '40px' }}>
+                        <p className="text-body" style={{ lineHeight: 1.8, fontSize: '1.1rem', marginBottom: '40px' }}>
                             {p.description}
                         </p>
 
                         {/* Sizes */}
                         {p.sizes?.length > 0 && (
                             <div style={{ marginBottom: '40px' }}>
-                                <p style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '16px' }}>SELECT SIZE</p>
-                                <div style={{ display: 'flex', gap: '12px' }}>
+                                <p className="theme-section-label">SELECT SIZE</p>
+                                <div className="flex gap-12">
                                     {p.sizes.map((s: string) => (
                                         <button
                                             key={s}
                                             onClick={() => setSelectedSize(s)}
-                                            style={{
-                                                width: '56px', height: '56px', borderRadius: '12px', border: '2px solid',
-                                                borderColor: selectedSize === s ? '#fff' : 'rgba(255,255,255,0.1)',
-                                                background: selectedSize === s ? '#fff' : 'transparent',
-                                                color: selectedSize === s ? '#000' : '#fff',
-                                                fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s'
-                                            }}
+                                            className={`payment-method-btn ${selectedSize === s ? 'payment-method-btn--active' : ''}`}
+                                            style={{ width: '60px', height: '60px' }}
                                         >
                                             {s}
                                         </button>
@@ -119,26 +116,23 @@ export default function ProductDetailPage() {
 
                         {/* Quantity */}
                         <div style={{ marginBottom: '40px' }}>
-                            <p style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '16px' }}>QUANTITY</p>
-                            <div style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '8px' }}>
-                                <button onClick={() => setQuantity(q => Math.max(1, q - 1))} style={{ background: 'none', border: 'none', color: '#fff', padding: '8px', cursor: 'pointer' }}><FiMinus /></button>
-                                <span style={{ width: '40px', textAlign: 'center', fontWeight: 700 }}>{quantity}</span>
-                                <button onClick={() => setQuantity(q => Math.min(p.stock, q + 1))} style={{ background: 'none', border: 'none', color: '#fff', padding: '8px', cursor: 'pointer' }}><FiPlus /></button>
+                            <p className="theme-section-label">QUANTITY</p>
+                            <div className="quantity-control" style={{ padding: '8px', display: 'inline-flex' }}>
+                                <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="quantity-control__btn" style={{ padding: '10px' }}><FiMinus /></button>
+                                <span className="quantity-control__value" style={{ width: '50px', fontSize: '1.1rem' }}>{quantity}</span>
+                                <button onClick={() => setQuantity(q => Math.min(p.stock, q + 1))} className="quantity-control__btn" style={{ padding: '10px' }}><FiPlus /></button>
                             </div>
                         </div>
 
                         {/* CTA */}
-                        <div style={{ display: 'flex', gap: '16px' }}>
+                        <div className="flex gap-16">
                             <button 
                                 onClick={handleAddToCart}
                                 disabled={p.stock <= 0}
-                                style={{
-                                    flex: 1, background: '#fff', color: '#000', borderRadius: '16px', padding: '20px',
-                                    fontWeight: 700, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center',
-                                    justifyContent: 'center', gap: '12px', transition: 'all 0.3s ease'
-                                }}
+                                className="theme-button flex-1"
+                                style={{ padding: '24px', fontSize: '1rem' }}
                             >
-                                <FiShoppingBag size={20} />
+                                <FiShoppingBag size={22} />
                                 ADD TO CART
                             </button>
                         </div>
