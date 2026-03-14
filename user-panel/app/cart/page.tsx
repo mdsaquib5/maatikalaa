@@ -89,7 +89,7 @@ export default function CartPage() {
                                 </div>
                                 <div className="summary-row">
                                     <span className="summary-row--label">Shipping</span>
-                                    <span className="font-600" style={{ color: '#4ADE80' }}>FREE</span>
+                                    <span className="font-600 text-success">FREE</span>
                                 </div>
                             </div>
                             

@@ -154,7 +154,7 @@ const Header = () => {
                                         <span className="header__drawer-num">0{navLinks.length + 2}</span>
                                         My Orders
                                     </Link>
-                                    <button onClick={handleLogout} className="header__drawer-link header__logout-btn" style={{ textAlign: 'left', width: '100%' }}>
+                                    <button onClick={handleLogout} className="header__drawer-link header__logout-btn text-left w-full">
                                         <span className="header__drawer-num">0{navLinks.length + 3}</span>
                                         Logout
                                     </button>

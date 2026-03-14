@@ -19,17 +19,17 @@ export default function UserOrdersPage() {
     return (
         <ProtectedRoute>
             <main className="theme-container">
-                <div className="container" style={{ maxWidth: '900px' }}>
+                <div className="container orders-container">
                     <h1 className="theme-title">Your Orders</h1>
 
                     {isLoading ? (
-                        <div className="full-page-center" style={{ minHeight: 'auto', padding: '100px' }}>
-                             <div className="spinner mb-24" style={{ margin: '0 auto 20px' }} />
-                             Fetching your order history...
+                        <div className="full-page-center pt-80">
+                             <div className="spinner mb-24" />
+                             <p className="text-body">Fetching your order history...</p>
                         </div>
                     ) : orders.length === 0 ? (
-                        <div className="empty-state theme-card" style={{ padding: '80px' }}>
-                            <FiPackage size={48} className="empty-state__icon" />
+                        <div className="empty-state theme-card">
+                            <FiPackage size={48} className="empty-state__icon mb-24" />
                             <p className="text-body">No orders placed yet.</p>
                         </div>
                     ) : (
@@ -38,7 +38,7 @@ export default function UserOrdersPage() {
                                 <div key={order._id} className="theme-card">
                                     <div className="flex justify-between mb-24 align-start">
                                         <div>
-                                            <p className="theme-section-label" style={{ marginBottom: '4px' }}>ORDER #{order._id.slice(-6).toUpperCase()}</p>
+                                            <p className="theme-section-label mb-8">ORDER #{order._id.slice(-6).toUpperCase()}</p>
                                             <p className="text-sm text-body">Placed on {new Date(order.createdAt).toLocaleDateString()}</p>
                                         </div>
                                         <div className={`status-badge ${order.orderStatus === 'DELIVERED' ? 'status-badge--delivered' : 'status-badge--pending'}`}>
@@ -57,28 +57,28 @@ export default function UserOrdersPage() {
                                                 </div>
                                                 <div className="flex-1">
                                                     <p className="font-600 text-heading">{item.productId?.productName}</p>
-                                                    <p className="text-sm text-body flex items-center gap-12">
-                                                        <span className="theme-badge" style={{ padding: '2px 8px', fontSize: '0.65rem' }}>{item.size || 'N/A'}</span>
-                                                        <span>Qty: {item.quantity || item.qty || 1}</span>
-                                                    </p>
+                                                    <div className="flex items-center gap-12 mt-8">
+                                                        <span className="theme-badge badge-mini">{item.size || 'N/A'}</span>
+                                                        <span className="text-sm text-body">Qty: {item.quantity || item.qty || 1}</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
 
-                                    <div className="divider-line" style={{ margin: '20px 0' }} />
+                                    <div className="divider-line mt-24 mb-24" />
 
-                                    <div className="flex justify-between items-center align-end">
+                                    <div className="flex justify-between items-center">
                                         <div>
-                                            <p className="text-sm text-body" style={{ marginBottom: '4px' }}>
+                                            <p className="text-sm text-body mb-8">
                                                 Payment: <span className="text-heading font-600">{order.paymentStatus} via {order.paymentMethod}</span>
                                             </p>
-                                            <p className="text-sm text-muted" style={{ maxWidth: '400px' }}>
+                                            <p className="text-sm text-muted max-w-400">
                                                 Deliver to: {order.shippingAddress || 'N/A'}
                                             </p>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-xs text-muted" style={{ marginBottom: '2px' }}>Total Amount</p>
+                                            <p className="text-xs text-muted mb-4">Total Amount</p>
                                             <p className="text-xl font-800 text-accent">₹{order.totalAmount.toLocaleString('en-IN')}</p>
                                         </div>
                                     </div>

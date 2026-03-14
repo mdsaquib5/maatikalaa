@@ -34,15 +34,14 @@ const ShopPage = () => {
                 <header className="shop-header">
                     <div className="shop-header__info">
                         <span className="theme-badge mb-24">The Collection</span>
-                        <h1 className="theme-title" style={{ marginBottom: '0' }}>Handcrafted Muds Ware.</h1>
+                        <h1 className="theme-title mb-0">Handcrafted Muds Ware.</h1>
                     </div>
 
                     <div className="shop-search">
-                        <FiSearch className="shop-search__icon" style={{ color: 'var(--color-accent-primary)' }} />
+                        <FiSearch className="shop-search__icon text-accent" />
                         <input
                             type="text"
-                            className="shop-search__input"
-                            style={{ fontFamily: 'inherit' }}
+                            className="shop-search__input font-inherit"
                             placeholder="Search our pieces..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -53,7 +52,7 @@ const ShopPage = () => {
                 {/* Grid */}
                 <div className="product-grid">
                     {isLoading ? (
-                        <div className="full-page-center" style={{ minHeight: '300px', gridColumn: '1 / -1' }}>
+                        <div className="full-page-center grid-cols-full min-h-300">
                             Discovering artisan pieces...
                         </div>
                     ) : filteredProducts.length > 0 ? (
@@ -72,7 +71,7 @@ const ShopPage = () => {
                             />
                         ))
                     ) : (
-                        <div className="empty-state" style={{ gridColumn: '1 / -1', padding: '100px 0' }}>
+                        <div className="empty-state grid-cols-full py-100">
                             <p className="text-body">No products found matching &quot;{searchTerm}&quot;</p>
                         </div>
                     )}

@@ -41,14 +41,14 @@ const QuickViewPanel: React.FC<QuickViewPanelProps> = ({ product, onClose }) => 
                     <span className="quick-view__tag">Featured Piece</span>
                     <h2 className="quick-view__title">{product.name}</h2>
                     <div className="quick-view__price-row mb-24">
-                        <span className="text-xl font-800" style={{ color: 'var(--color-accent-primary)' }}>₹{product.price.toLocaleString('en-IN')}</span>
+                        <span className="text-xl font-800 text-accent">₹{product.price.toLocaleString('en-IN')}</span>
                         {product.discountPrice && (
-                            <span className="text-body" style={{ textDecoration: 'line-through', fontSize: '1.1rem', fontWeight: 400 }}>
+                            <span className="text-body text-strike text-body-lg font-400">
                                 ₹{product.discountPrice.toLocaleString('en-IN')}
                             </span>
                         )}
                     </div>
-                    <p className="quick-view__desc text-body" style={{ lineHeight: 1.7, marginBottom: '32px' }}>
+                    <p className="quick-view__desc text-body line-height-17 mb-32">
                         {product.description}
                     </p>
 

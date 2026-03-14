@@ -287,4 +287,17 @@
     .summary-total__value {
         font-size: 1.5rem !important;
     }
+
+    .order-product-row {
+        gap: 16px;
+    }
+
+    .order-product-img {
+        width: 80px !important;
+        height: 80px !important;
+    }
+
+    .orders-container {
+        padding-inline: 16px;
+    }
 }

@@ -135,7 +135,7 @@ export default function LoginPage() {
                 </form>
 
                 <div className="auth-divider mt-32">
-                    <span style={{ margin: '0 12px' }}>or</span>
+                    <span className="px-12">or</span>
                 </div>
 
                 <p className="auth-redirect">

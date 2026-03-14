@@ -61,8 +61,8 @@ const OurCraftPage = () => {
                     <div className="container">
                         <div className="benefits-grid">
                             <div className="benefits-content">
-                                <span className="craft-hero__tag" style={{ fontSize: '0.85rem' }}>Why Partner?</span>
-                                <h2 className="about-content__title" style={{ fontSize: '2.5rem' }}>Crafting Profit with Purpose.</h2>
+                                <span className="craft-hero__tag badge-sm">Why Partner?</span>
+                                <h2 className="about-content__title section-title-sm">Crafting Profit with Purpose.</h2>
 
                                 <div className="benefits-list">
                                     <div className="benefit-item">
@@ -91,14 +91,13 @@ const OurCraftPage = () => {
                                 <Link href="/about" className="benefits-cta-btn">Know more about us</Link>
                             </div>
 
-                            <div className="benefits-image-column" style={{ textAlign: 'end' }}>
+                            <div className="benefits-image-column text-end">
                                 <Image
                                     src="/hero-bg-2.webp"
                                     alt="Pottery on wheel"
                                     width={400}
                                     height={500}
-                                    className="craft-float-img"
-                                    style={{ borderRadius: '30px', objectFit: 'cover' }}
+                                    className="craft-float-img rounded-30 object-cover"
                                 />
                             </div>
                         </div>

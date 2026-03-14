@@ -40,8 +40,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }) => {
                     <img
                         src={product.image}
                         alt={product.name}
-                        className="product-card__image"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        className="product-card__image w-full h-full object-cover"
                     />
                 </div>
             </Link>
@@ -56,7 +55,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }) => {
 
             <div className="product-card__content">
                 <Link href={`/product/${product.id}`}>
-                    <h3 className="product-card__title" style={{ transition: 'color 0.3s' }}>{product.name}</h3>
+                    <h3 className="product-card__title">{product.name}</h3>
                 </Link>
                 <div className="product-card__price-row">
                     <span className="product-card__price">₹{product.price.toLocaleString('en-IN')}</span>

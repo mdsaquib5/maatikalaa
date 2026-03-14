@@ -46,7 +46,7 @@ const AboutPage = () => {
             {/* Process Section */}
             <section className="process-section">
                 <div className="container">
-                    <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+                    <div className="text-center mb-60">
                         <span className="about-content__tag">The Craft</span>
                         <h2 className="about-content__title">Our Quiet Process</h2>
                     </div>
