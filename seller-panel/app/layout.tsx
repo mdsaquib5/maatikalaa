@@ -7,9 +7,6 @@ import Providers from "@/components/providers/Providers";
 export const metadata: Metadata = {
   title: "Maatikala — Seller Dashboard",
   description: "Manage your Maatikala store — add products, track orders, and grow your handcraft business.",
-  icons: {
-    icon: "/logo.png",
-  },
 };
 
 export default function RootLayout({
