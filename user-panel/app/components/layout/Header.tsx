@@ -92,7 +92,7 @@ const Header = () => {
                     </ul>
                 </nav>
 
-                <div className="header__actions" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                <div className="header__actions" style={{ display: 'flex', alignItems: 'center' }}>
                     <Link href="/cart" className="header__nav-link" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                         <FiShoppingCart size={20} />
                         {items.length > 0 && (

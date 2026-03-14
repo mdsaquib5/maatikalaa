@@ -211,6 +211,8 @@ section {
     padding: 6px 14px;
     border-radius: 6px;
     overflow: hidden;
+    color: var(--color-text-body);
+    font-weight: 600;
 }
 
 .header__nav-link-text {
