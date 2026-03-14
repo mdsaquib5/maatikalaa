@@ -33,10 +33,10 @@ export default function UserOrdersPage() {
                             <p className="text-body">No orders placed yet.</p>
                         </div>
                     ) : (
-                        <div className="flex flex-col gap-24">
+                        <div className="orders-list">
                             {orders.map((order: any) => (
                                 <div key={order._id} className="theme-card">
-                                    <div className="flex justify-between mb-24 align-start">
+                                    <div className="order-card__header mb-24">
                                         <div>
                                             <p className="theme-section-label mb-8">ORDER #{order._id.slice(-6).toUpperCase()}</p>
                                             <p className="text-sm text-body">Placed on {new Date(order.createdAt).toLocaleDateString()}</p>
@@ -55,9 +55,9 @@ export default function UserOrdersPage() {
                                                 <div className="order-product-img">
                                                     <img src={item.productId?.images[0]?.url || '/placeholder.png'} alt="" />
                                                 </div>
-                                                <div className="flex-1">
+                                                <div className="order-product__info">
                                                     <p className="font-600 text-heading">{item.productId?.productName}</p>
-                                                    <div className="flex items-center gap-12 mt-8">
+                                                    <div className="order-product__meta mt-8">
                                                         <span className="theme-badge badge-mini">{item.size || 'N/A'}</span>
                                                         <span className="text-sm text-body">Qty: {item.quantity || item.qty || 1}</span>
                                                     </div>
@@ -68,7 +68,7 @@ export default function UserOrdersPage() {
 
                                     <div className="divider-line mt-24 mb-24" />
 
-                                    <div className="flex justify-between items-center">
+                                    <div className="order-card__footer">
                                         <div>
                                             <p className="text-sm text-body mb-8">
                                                 Payment: <span className="text-heading font-600">{order.paymentStatus} via {order.paymentMethod}</span>
@@ -77,7 +77,7 @@ export default function UserOrdersPage() {
                                                 Deliver to: {order.shippingAddress || 'N/A'}
                                             </p>
                                         </div>
-                                        <div className="text-right">
+                                        <div className="order-total-block">
                                             <p className="text-xs text-muted mb-4">Total Amount</p>
                                             <p className="text-xl font-800 text-accent">₹{order.totalAmount.toLocaleString('en-IN')}</p>
                                         </div>

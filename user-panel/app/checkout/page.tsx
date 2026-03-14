@@ -109,18 +109,18 @@ export default function CheckoutPage() {
                 <div className="container checkout-container">
                     <h1 className="theme-title">Checkout</h1>
 
-                    <div className="two-col-grid checkout-grid">
+                    <div className="checkout-layout">
                         
                         {/* Shipping & Payment */}
-                        <div className="flex flex-col gap-32">
-                            <div className="theme-card">
-                                <div className="flex items-center gap-12 mb-24">
+                        <div className="checkout-form">
+                            <div className="theme-card checkout-section">
+                                <div className="theme-card-header mb-24">
                                     <FiTruck size={20} className="text-accent" />
                                     <h2 className="item-card-title mb-0">Shipping Information</h2>
                                 </div>
-                                <div className="grid gap-16">
+                                <div className="checkout-fields">
                                     <input placeholder="Street Address" value={address} onChange={e => setAddress(e.target.value)} className="theme-input" />
-                                    <div className="grid grid-cols-2 gap-16">
+                                    <div className="checkout-row">
                                         <input placeholder="City" value={city} onChange={e => setCity(e.target.value)} className="theme-input" />
                                         <input placeholder="Zip Code" value={zip} onChange={e => setZip(e.target.value)} className="theme-input" />
                                     </div>
@@ -128,12 +128,12 @@ export default function CheckoutPage() {
                                 </div>
                             </div>
 
-                            <div className="theme-card">
-                                <div className="flex items-center gap-12 mb-24">
+                            <div className="theme-card checkout-section">
+                                <div className="theme-card-header mb-24">
                                     <FiCreditCard size={20} className="text-accent" />
                                     <h2 className="item-card-title mb-0">Payment Method</h2>
                                 </div>
-                                <div className="flex gap-16">
+                                <div className="payment-options">
                                     <button 
                                         onClick={() => setPaymentMethod('RAZORPAY')}
                                         className={`payment-method-btn ${paymentMethod === 'RAZORPAY' ? 'payment-method-btn--active' : ''}`}
@@ -153,13 +153,13 @@ export default function CheckoutPage() {
                         {/* Summary */}
                         <aside className="item-list-container">
                             <div className="theme-card">
-                                <div className="flex items-center gap-12 mb-24">
+                                <div className="theme-card-header mb-24">
                                     <FiPackage size={20} className="text-accent" />
                                     <h2 className="item-card-title mb-0">Summary</h2>
                                 </div>
                                 <div className="summary-details">
                                     {items.map(item => (
-                                        <div key={item.id} className="summary-row text-sm">
+                                        <div key={`${item.id}-${item.size}`} className="summary-row text-sm">
                                             <span className="summary-row--label">{item.name} x {item.quantity}</span>
                                             <span className="summary-row--value">₹{(item.price * item.quantity).toLocaleString('en-IN')}</span>
                                         </div>

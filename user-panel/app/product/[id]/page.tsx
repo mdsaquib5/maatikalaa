@@ -50,12 +50,12 @@ export default function ProductDetailPage() {
             <div className="container">
                 <button
                     onClick={() => router.back()}
-                    className="flex items-center gap-8 text-body font-600 btn-back-link"
+                    className="btn-back-link"
                 >
                     <FiChevronLeft /> Back to Shop
                 </button>
 
-                <div className="grid product-detail-grid grid-align-start">
+                <div className="product-detail-layout">
 
                     {/* Image Section */}
                     <div className="sticky-sidebar">
@@ -67,7 +67,7 @@ export default function ProductDetailPage() {
                             />
                         </div>
                         {p.images.length > 1 && (
-                            <div className="flex gap-12 mt-16">
+                            <div className="product-detail__thumbs">
                                 {p.images.slice(1).map((img: any, i: number) => (
                                     <div key={i} className="theme-card item-card-img--thumb product-detail-image-main">
                                         <img src={img.url} alt="" className="w-full h-full" />
@@ -78,12 +78,12 @@ export default function ProductDetailPage() {
                     </div>
 
                     {/* Details Section */}
-                    <div className="flex flex-col">
+                    <div className="product-detail__info">
                         <div>
                             <span className="theme-badge mb-24">Artisan Crafted</span>
                             <h1 className="theme-title theme-title-large">{p.productName}</h1>
 
-                            <div className="flex items-center gap-24 mb-32">
+                            <div className="product-detail__meta">
                                 <span className="text-price-large">₹{p.price.toLocaleString('en-IN')}</span>
                                 <span className={`status-badge ${p.stock > 0 ? 'status-badge--delivered' : 'status-badge--pending'}`}>
                                     {p.stock > 0 ? `In Stock (${p.stock} available)` : 'Sold Out'}
@@ -98,7 +98,7 @@ export default function ProductDetailPage() {
                             {p.sizes?.length > 0 && (
                                 <div className="mb-40">
                                     <p className="theme-section-label">SELECT SIZE</p>
-                                    <div className="flex gap-12">
+                                    <div className="product-detail__sizes">
                                         {p.sizes.map((s: string) => (
                                             <button
                                                 key={s}
@@ -123,11 +123,11 @@ export default function ProductDetailPage() {
                             </div>
 
                             {/* CTA */}
-                            <div className="flex gap-16">
+                            <div className="product-detail__actions">
                                 <button
                                     onClick={handleAddToCart}
                                     disabled={p.stock <= 0}
-                                    className="theme-button flex-1 btn-cta-large"
+                                    className="theme-button btn-cta-large"
                                 >
                                     <FiShoppingBag size={22} />
                                     ADD TO CART

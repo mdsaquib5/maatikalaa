@@ -104,7 +104,7 @@ const Header = () => {
 
                     <div className="header__auth-desktop">
                         {isAuthenticated ? (
-                            <div className="flex items-center gap-16">
+                            <div className="header__user-actions">
                                 <Link href="/orders" className="header__nav-link" title="My Orders">
                                     <FiUser size={20} />
                                 </Link>
@@ -149,7 +149,7 @@ const Header = () => {
                         </li>
                         <li className="header__drawer-item" style={{ animationDelay: `${(navLinks.length + 1) * 0.07}s` }}>
                             {isAuthenticated ? (
-                                <div className="flex flex-col gap-12">
+                                <div className="header__drawer-actions">
                                     <Link href="/orders" className="header__drawer-link" onClick={() => handleNavClick('/orders')}>
                                         <span className="header__drawer-num">0{navLinks.length + 2}</span>
                                         My Orders

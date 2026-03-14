@@ -52,7 +52,7 @@ const ShopPage = () => {
                 {/* Grid */}
                 <div className="product-grid">
                     {isLoading ? (
-                        <div className="full-page-center grid-cols-full min-h-300">
+                        <div className="product-grid__full-width product-grid__loading">
                             Discovering artisan pieces...
                         </div>
                     ) : filteredProducts.length > 0 ? (
@@ -71,7 +71,7 @@ const ShopPage = () => {
                             />
                         ))
                     ) : (
-                        <div className="empty-state grid-cols-full py-100">
+                        <div className="product-grid__full-width product-grid__empty">
                             <p className="text-body">No products found matching &quot;{searchTerm}&quot;</p>
                         </div>
                     )}
