@@ -48,10 +48,12 @@ export const signup = async (req, res) => {
 
         const token = generateToken(user._id);
 
+        const isProduction = process.env.NODE_ENV === "production";
         res.cookie("token", token, {
             httpOnly: true,
-            secure: false,
-            sameSite: "lax",
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax",
+            path: "/",
         });
 
         user.password = undefined;
@@ -101,11 +103,14 @@ export const login = async (req, res) => {
 
         const token = generateToken(user._id);
 
+        const isProduction = process.env.NODE_ENV === "production";
         res.cookie("token", token, {
             httpOnly: true,
-            secure: false,
-            sameSite: "lax",
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax",
+            path: "/",
         });
+
 
         user.password = undefined;
 
@@ -125,14 +130,14 @@ export const login = async (req, res) => {
 
 export const logout = (req, res) => {
     try {
+        const isProduction = process.env.NODE_ENV === "production";
         res.cookie("token", "", {
             httpOnly: true,
-            secure: false, 
-            sameSite: "lax",
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax",
             path: "/",
             expires: new Date(0),
         });
-
         return res.status(200).json({
             success: true,
             message: "Logged out successfully",

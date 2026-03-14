@@ -40,10 +40,11 @@ export const sellerSignup = async (req, res) => {
 
         const token = generateToken(seller._id);
 
+        const isProduction = process.env.NODE_ENV === "production";
         res.cookie("sellerToken", token, {
             httpOnly: true,
-            secure: false, // development: matches user auth settings
-            sameSite: "lax",
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax",
             path: "/",
         });
 
@@ -85,12 +86,14 @@ export const sellerLogin = async (req, res) => {
 
         const token = generateToken(seller._id);
 
+        const isProduction = process.env.NODE_ENV === "production";
         res.cookie("sellerToken", token, {
             httpOnly: true,
-            secure: false,
-            sameSite: "lax",
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax",
             path: "/",
         });
+
 
         seller.password = undefined;
 
@@ -108,13 +111,15 @@ export const sellerLogin = async (req, res) => {
 
 export const sellerLogout = (req, res) => {
     try {
+        const isProduction = process.env.NODE_ENV === "production";
         res.cookie("sellerToken", "", {
             httpOnly: true,
-            secure: false,
-            sameSite: "lax",
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax",
             path: "/",
             expires: new Date(0),
         });
+
 
         return res.status(200).json({ success: true, message: "Seller logged out successfully" });
     } catch (error) {

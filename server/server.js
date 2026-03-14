@@ -13,8 +13,21 @@ import orderRoutes from "./routes/orderRoutes.js";
 const app = express();
 mongoConnection();
 
+const allowedOrigins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "https://maatikalaa-user.vercel.app",
+    "https://maatikalaa-seller.vercel.app"
+];
+
 app.use(cors({
-    origin: ["http://localhost:3000", "http://localhost:3001"], // your frontend and seller panel URLs
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
 }));
 
@@ -23,7 +36,7 @@ app.use(cookieParser());
 
 // Routes
 app.get("/", (req, res) => {
-    res.send("Server is running on port 4000");
+    res.send("Maatikalaa Server is running...");
 });
 
 // my routes
@@ -34,4 +47,10 @@ app.use("/api/cart", cartRouter);
 app.use("/api/orders", orderRoutes);
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`Server running on port Localhost:${PORT}`));
+
+// Only listen if not running as a serverless function
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => console.log(`Server running on port Localhost:${PORT}`));
+}
+
+export default app;
