@@ -1270,7 +1270,8 @@ body {
   color: var(--color-accent-primary);
 }
 
-.size-option:checked+.size-option-label {
+.size-option:checked+.size-option-label,
+.size-option-label--selected {
   background: rgba(249, 211, 173, 0.12);
   border-color: var(--color-accent-primary);
   color: var(--color-accent-primary);

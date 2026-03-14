@@ -7,7 +7,9 @@ import {
     MdEmail, MdLock, MdVisibility, MdVisibilityOff,
     MdStorefront, MdError, MdArrowForward
 } from 'react-icons/md';
-import { useSellerStore } from '../../store/SellerStore';
+import { useSellerAuth } from '@/store/useSellerAuth';
+import api from '@/lib/api';
+import toast from 'react-hot-toast';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -15,7 +17,7 @@ export default function LoginPage() {
     const [showPass, setShowPass] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const { login } = useSellerStore();
+    const { setAuth } = useSellerAuth();
     const router = useRouter();
 
     const handleSubmit = async (e: FormEvent) => {
@@ -25,17 +27,26 @@ export default function LoginPage() {
             setError('Please fill in all fields.');
             return;
         }
-        if (password.length < 6) {
-            setError('Password must be at least 6 characters.');
-            return;
-        }
+        
         setLoading(true);
-        const success = await login(email, password);
-        setLoading(false);
-        if (success) {
-            router.replace('/overview');
-        } else {
-            setError('Invalid credentials. Please try again.');
+        try {
+            const response = await api.post('/seller/login', { email, password });
+            
+            if (response.data.success) {
+                setAuth(response.data.seller);
+                toast.success('Login successful!');
+                router.replace('/overview');
+            } else {
+                setError(response.data.message || 'Login failed');
+                toast.error(response.data.message || 'Login failed');
+            }
+        } catch (err: any) {
+            const msg = err.response?.data?.message || 'Something went wrong';
+            setError(msg);
+            toast.error(msg);
+            console.error('Login error:', err);
+        } finally {
+            setLoading(false);
         }
     };
 

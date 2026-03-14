@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { montserrat } from "./fonts/font";
 import "./globals.css";
 import "./responsive.css";
+import Providers from "@/components/providers/Providers";
 
 export const metadata: Metadata = {
   title: "Maatikala — Seller Dashboard",
@@ -16,7 +17,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={montserrat.variable}>
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

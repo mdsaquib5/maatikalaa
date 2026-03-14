@@ -5,62 +5,25 @@ import ProductCard from "../components/shop/ProductCard";
 import QuickViewPanel from "../components/shop/QuickViewPanel";
 import { FiSearch } from "react-icons/fi";
 import Link from "next/link";
-
-const products = [
-    {
-        id: 1,
-        name: "Artisan Earth Vase",
-        description: "Handcrafted from deep river clay, this vase features a unique textured finish that brings the soul of the earth into your home.",
-        price: 45.00,
-        discountPrice: 60.00,
-        image: "/hero-bg-2.webp"
-    },
-    {
-        id: 2,
-        name: "Minimalist Stone Mug",
-        description: "A perfectly weighted mug for slow mornings. Fire-glazed with a matte charcoal finish that feels incredible to hold.",
-        price: 28.00,
-        discountPrice: 35.00,
-        image: "/hero-bg-1.webp"
-    },
-    {
-        id: 3,
-        name: "Ancient Tides Bowl",
-        description: "Inspired by movement of the sea, this wide bowl features a mesmerizing blue ripple glaze. Perfect for shared meals.",
-        price: 55.00,
-        image: "/hero-bg-3.webp"
-    },
-    {
-        id: 4,
-        name: "Desert Bloom Pitcher",
-        description: "Tall and elegant, this pitcher is crafted from sand-rich clay and fired with a subtle terracotta glow.",
-        price: 72.00,
-        discountPrice: 90.00,
-        image: "/hero-bg-2.webp"
-    },
-    {
-        id: 5,
-        name: "Lunar Crater Plate",
-        description: "Textured like the surface of the moon, this plate is a conversation starter for any dinner table.",
-        price: 32.00,
-        image: "/hero-bg-1.webp"
-    },
-    {
-        id: 6,
-        name: "Rustica Serving Tray",
-        description: "A large, sturdy tray built for gatherings. Features raw, unglazed edges for a rustic, tactile experience.",
-        price: 85.00,
-        discountPrice: 110.00,
-        image: "/hero-bg-3.webp"
-    }
-];
+import api from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 
 const ShopPage = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
 
-    const filteredProducts = products.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const { data, isLoading } = useQuery({
+        queryKey: ['products'],
+        queryFn: async () => {
+            const res = await api.get('/products/all-products');
+            return res.data;
+        }
+    });
+
+    const products = data?.products || [];
+
+    const filteredProducts = products.filter((product: any) =>
+        product.productName.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -88,16 +51,27 @@ const ShopPage = () => {
 
                 {/* Grid */}
                 <div className="product-grid">
-                    {filteredProducts.length > 0 ? (
-                        filteredProducts.map(product => (
+                    {isLoading ? (
+                        <div style={{ color: 'white', padding: '100px 0', fontSize: '1.2rem', textAlign: 'center', width: '100%' }}>
+                            Discovering artisan pieces...
+                        </div>
+                    ) : filteredProducts.length > 0 ? (
+                        filteredProducts.map((product: any) => (
                             <ProductCard
-                                key={product.id}
-                                product={product}
-                                onQuickView={(p) => setSelectedProduct(p)}
+                                key={product._id}
+                                product={{
+                                    id: product._id,
+                                    name: product.productName,
+                                    description: product.description,
+                                    price: product.price,
+                                    image: product.images[0]?.url || '/placeholder.png',
+                                    sellerId: product.sellerId
+                                }}
+                                onQuickView={(p) => setSelectedProduct(product)}
                             />
                         ))
                     ) : (
-                        <div style={{ color: 'white', padding: '40px 0', fontSize: '1.2rem' }}>
+                        <div style={{ color: 'white', padding: '100px 0', fontSize: '1.2rem', textAlign: 'center', width: '100%' }}>
                             No products found matching &quot;{searchTerm}&quot;
                         </div>
                     )}
@@ -117,7 +91,13 @@ const ShopPage = () => {
 
             {/* Modal */}
             <QuickViewPanel
-                product={selectedProduct}
+                product={selectedProduct ? {
+                    id: selectedProduct._id,
+                    name: selectedProduct.productName,
+                    description: selectedProduct.description,
+                    price: selectedProduct.price,
+                    image: selectedProduct.images[0]?.url || '/placeholder.png'
+                } : null}
                 onClose={() => setSelectedProduct(null)}
             />
         </main>

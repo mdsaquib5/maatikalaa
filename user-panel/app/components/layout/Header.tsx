@@ -3,17 +3,22 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/store/useAuth";
+import { useCart } from "@/store/useCart";
+import toast from "react-hot-toast";
+import { FiShoppingCart, FiUser } from "react-icons/fi";
 
 const navLinks = [
     { label: "Home", href: "/" },
     { label: "Shop", href: "/shop" },
     { label: "Craft", href: "/craft" },
     { label: "About", href: "/about" },
-    { label: "Contact", href: "/contact" },
 ];
 
 const Header = () => {
     const pathname = usePathname();
+    const { user, isAuthenticated, clearAuth } = useAuth();
+    const { items } = useCart();
     const [scrolled, setScrolled] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const [clickedLink, setClickedLink] = useState<string | null>(null);
@@ -21,38 +26,35 @@ const Header = () => {
     const lastScrollY = useRef(0);
     const bounceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    /* ── Scroll handler ─────────────────────────── */
     useEffect(() => {
         const onScroll = () => {
             const y = window.scrollY;
-
-            /* scrolled state — activates glass bg */
             setScrolled(y > 40);
-
-            /* bounce effect on direction change */
             const dir = y > lastScrollY.current ? "down" : "up";
             lastScrollY.current = y;
-
             if (bounceTimeout.current) clearTimeout(bounceTimeout.current);
             setBounceClass(`header-bounce-${dir}`);
             bounceTimeout.current = setTimeout(() => setBounceClass(""), 550);
         };
-
         window.addEventListener("scroll", onScroll, { passive: true });
         return () => window.removeEventListener("scroll", onScroll);
     }, []);
 
-    /* ── Lock body when mobile menu is open ─────── */
     useEffect(() => {
         document.body.style.overflow = menuOpen ? "hidden" : "";
         return () => { document.body.style.overflow = ""; };
     }, [menuOpen]);
 
-    /* ── Click ripple ───────────────────────────── */
     const handleNavClick = (href: string) => {
         setClickedLink(href);
         setMenuOpen(false);
         setTimeout(() => setClickedLink(null), 600);
+    };
+
+    const handleLogout = () => {
+        clearAuth();
+        toast.success("Logged out successfully");
+        setMenuOpen(false);
     };
 
     return (
@@ -90,15 +92,41 @@ const Header = () => {
                     </ul>
                 </nav>
 
-                {/* ── Hamburger (mobile) ── */}
-                <button
-                    className={`header__hamburger ${menuOpen ? "header__hamburger--open" : ""}`}
-                    onClick={() => setMenuOpen(prev => !prev)}
-                    aria-label="Toggle menu"
-                    aria-expanded={menuOpen}
-                >
-                    <span /><span /><span />
-                </button>
+                <div className="header__actions" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                    <Link href="/cart" className="header__nav-link" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <FiShoppingCart size={20} />
+                        {items.length > 0 && (
+                            <span style={{ position: 'absolute', top: '-8px', right: '-10px', background: '#fff', color: '#000', fontSize: '0.6rem', fontWeight: 800, width: '16px', height: '16px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {items.length}
+                            </span>
+                        )}
+                    </Link>
+
+                    <div className="header__auth-desktop">
+                        {isAuthenticated ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                <Link href="/orders" className="header__nav-link" title="My Orders">
+                                    <FiUser size={20} />
+                                </Link>
+                                <button onClick={handleLogout} className="header__nav-link" style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+                                    Logout
+                                </button>
+                            </div>
+                        ) : (
+                            <Link href="/login" className="header__nav-link">Login</Link>
+                        )}
+                    </div>
+
+                    {/* ── Hamburger (mobile) ── */}
+                    <button
+                        className={`header__hamburger ${menuOpen ? "header__hamburger--open" : ""}`}
+                        onClick={() => setMenuOpen(prev => !prev)}
+                        aria-label="Toggle menu"
+                        aria-expanded={menuOpen}
+                    >
+                        <span /><span /><span />
+                    </button>
+                </div>
             </div>
 
             {/* ── Mobile Drawer ── */}
@@ -106,21 +134,38 @@ const Header = () => {
                 <nav aria-label="Mobile navigation">
                     <ul className="header__drawer-list">
                         {navLinks.map(({ label, href }, i) => (
-                            <li
-                                key={href}
-                                className="header__drawer-item"
-                                style={{ animationDelay: `${i * 0.07}s` }}
-                            >
-                                <Link
-                                    href={href}
-                                    className={`header__drawer-link ${pathname === href ? "header__drawer-link--active" : ""}`}
-                                    onClick={() => handleNavClick(href)}
-                                >
+                            <li key={href} className="header__drawer-item" style={{ animationDelay: `${i * 0.07}s` }}>
+                                <Link href={href} className={`header__drawer-link ${pathname === href ? "header__drawer-link--active" : ""}`} onClick={() => handleNavClick(href)}>
                                     <span className="header__drawer-num">0{i + 1}</span>
                                     {label}
                                 </Link>
                             </li>
                         ))}
+                        <li className="header__drawer-item" style={{ animationDelay: `${navLinks.length * 0.07}s` }}>
+                            <Link href="/cart" className="header__drawer-link" onClick={() => handleNavClick('/cart')}>
+                                <span className="header__drawer-num">0{navLinks.length + 1}</span>
+                                Cart ({items.length})
+                            </Link>
+                        </li>
+                        <li className="header__drawer-item" style={{ animationDelay: `${(navLinks.length + 1) * 0.07}s` }}>
+                            {isAuthenticated ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                    <Link href="/orders" className="header__drawer-link" onClick={() => handleNavClick('/orders')}>
+                                        <span className="header__drawer-num">0{navLinks.length + 2}</span>
+                                        My Orders
+                                    </Link>
+                                    <button onClick={handleLogout} className="header__drawer-link" style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%' }}>
+                                        <span className="header__drawer-num">0{navLinks.length + 3}</span>
+                                        Logout
+                                    </button>
+                                </div>
+                            ) : (
+                                <Link href="/login" className={`header__drawer-link`} onClick={() => handleNavClick("/login")}>
+                                    <span className="header__drawer-num">0{navLinks.length + 2}</span>
+                                    Login
+                                </Link>
+                            )}
+                        </li>
                     </ul>
                 </nav>
             </div>

@@ -8,15 +8,15 @@ export const createOrder = async (req, res) => {
 
     try {
 
-        const { items, totalAmount, paymentMethod } = req.body
+        const { items, totalAmount, paymentMethod, shippingAddress, phone } = req.body
 
         const order = await Order.create({
-
             userId: req.user._id,
             items,
             totalAmount,
-            paymentMethod
-
+            paymentMethod,
+            shippingAddress,
+            phone
         })
 
         if (paymentMethod === "COD") {
@@ -79,13 +79,17 @@ export const getSellerOrders = async (req, res) => {
 
         // Filter items in each order to only show what belongs to this seller
         const sellerOrders = orders.map(order => {
-            const sellerItems = order.items.filter(item =>
+            const orderObj = order.toObject();
+            const sellerItems = orderObj.items.filter(item =>
                 item.productId && item.productId.sellerId.toString() === sellerId.toString()
             );
 
+            const sellerTotalAmount = sellerItems.reduce((sum, item) => sum + (item.price * (item.quantity || 0)), 0);
+
             return {
-                ...order._doc,
-                items: sellerItems
+                ...orderObj,
+                items: sellerItems,
+                sellerTotalAmount: sellerTotalAmount || 0
             };
         });
 
@@ -201,3 +205,49 @@ export const verifyPayment = async (req, res) => {
     }
 
 }
+
+export const updateOrderStatus = async (req, res) => {
+
+    try {
+
+        const { orderId, status } = req.body;
+
+        const order = await Order.findById(orderId).populate("items.productId");
+
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: "Order not found"
+            });
+        }
+
+        // Verify that this seller actually has products in this order
+        const hasSellerProduct = order.items.some(item => 
+            item.productId && item.productId.sellerId.toString() === req.seller._id.toString()
+        );
+
+        if (!hasSellerProduct) {
+            return res.status(403).json({
+                success: false,
+                message: "Unauthorized to update this order"
+            });
+        }
+
+        order.orderStatus = status;
+        await order.save();
+
+        res.json({
+            success: true,
+            message: "Order status updated",
+            order
+        });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+
+}

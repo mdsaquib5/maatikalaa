@@ -31,7 +31,7 @@ const productSchema = new mongoose.Schema(
 
         sizes: {
             type: [String],
-            enum: ["S", "M", "L"],
+            enum: ["S", "M", "L", "XL", "XXL", "FREE SIZE"],
             set: function (val) {
                 if (typeof val === 'string') {
                     const trimmed = val.trim();

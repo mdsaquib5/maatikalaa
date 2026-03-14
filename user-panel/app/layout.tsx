@@ -3,6 +3,7 @@ import { montserrat } from "./fonts/font";
 import "./globals.css";
 import "./responsive.css";
 import Header from "./components/layout/Header";
+import Providers from "./components/providers/Providers";
 
 export const metadata: Metadata = {
   title: "Maatikalaa — Handcrafted Muds Ware",
@@ -17,8 +18,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={montserrat.variable}>
-        <Header />
-        {children}
+        <Providers>
+          <Header />
+          {children}
+        </Providers>
       </body>
     </html>
   );

@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, ReactNode } from 'react';
+import { useState, ReactNode, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
+import { useSellerAuth } from '@/store/useSellerAuth';
+import { useRouter } from 'next/navigation';
 
 interface DashboardLayoutProps {
     children: ReactNode;
@@ -13,6 +15,16 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children, pageTitle, pageCrumb }: DashboardLayoutProps) {
     const [collapsed, setCollapsed] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const { isAuthenticated } = useSellerAuth();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (!isAuthenticated) {
+            router.replace('/login');
+        }
+    }, [isAuthenticated, router]);
+
+    if (!isAuthenticated) return null;
 
     return (
         <div className="dashboard">

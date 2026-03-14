@@ -1,16 +1,18 @@
 import express from "express"
-import { createOrder, verifyPayment, getUserOrders, getSellerOrders } from "../controllers/orderController.js"
+import { createOrder, getSellerOrders, getUserOrders, verifyPayment, updateOrderStatus } from "../controllers/orderController.js"
 import { protect } from "../middleware/userAuth.js"
 import { protectSeller } from "../middleware/sellerAuth.js"
 
-const orderRouter = express.Router()
+const ordersRouter = express.Router()
 
-orderRouter.post("/create", protect, createOrder)
+ordersRouter.post("/create-order", protect, createOrder)
 
-orderRouter.post("/verify-payment", protect, verifyPayment)
+ordersRouter.post("/verify-payment", protect, verifyPayment)
 
-orderRouter.get("/user-orders", protect, getUserOrders)
+ordersRouter.get("/user-orders", protect, getUserOrders)
 
-orderRouter.get("/seller-orders", protectSeller, getSellerOrders)
+ordersRouter.get("/seller-orders", protectSeller, getSellerOrders)
 
-export default orderRouter;
+ordersRouter.put("/update-status", protectSeller, updateOrderStatus)
+
+export default ordersRouter;

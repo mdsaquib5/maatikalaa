@@ -2,7 +2,7 @@
 
 import { useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSellerStore } from '../../store/SellerStore';
+import { useSellerAuth } from '@/store/useSellerAuth';
 
 interface AuthGuardProps {
     children: ReactNode;
@@ -10,7 +10,7 @@ interface AuthGuardProps {
 }
 
 export default function AuthGuard({ children, requireAuth = true }: AuthGuardProps) {
-    const { isAuthenticated } = useSellerStore();
+    const { isAuthenticated } = useSellerAuth();
     const router = useRouter();
 
     useEffect(() => {

@@ -6,8 +6,10 @@ import {
     MdDashboard, MdAddBox, MdInventory, MdShoppingBag,
     MdChevronLeft, MdChevronRight, MdLogout, MdStorefront
 } from 'react-icons/md';
-import { useSellerStore } from '../../store/SellerStore';
+import { useSellerAuth } from '@/store/useSellerAuth';
 import { useRouter } from 'next/navigation';
+import api from '@/lib/api';
+import toast from 'react-hot-toast';
 
 interface SidebarProps {
     collapsed: boolean;
@@ -31,15 +33,22 @@ const NAV_ITEMS = [
 export default function Sidebar({ collapsed, mobileOpen, onCollapse, onMobileClose }: SidebarProps) {
     const pathname = usePathname();
     const router = useRouter();
-    const { seller, logout } = useSellerStore();
+    const { seller, clearAuth } = useSellerAuth();
 
-    const handleLogout = () => {
-        logout();
-        router.push('/login');
+    const handleLogout = async () => {
+        try {
+            await api.post('/seller/logout');
+            clearAuth();
+            toast.success('Logged out successfully');
+            router.push('/login');
+        } catch (err) {
+            clearAuth();
+            router.push('/login');
+        }
     };
 
     const initials = seller?.name
-        ? seller.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+        ? seller.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
         : 'S';
 
     const sidebarClass = [
@@ -102,15 +111,11 @@ export default function Sidebar({ collapsed, mobileOpen, onCollapse, onMobileClo
                 <div className="sidebar__footer">
                     <div className="sidebar__seller">
                         <div className="sidebar__seller-avatar">
-                            {seller?.avatar ? (
-                                <img src={seller.avatar} alt={seller.name} />
-                            ) : (
-                                initials
-                            )}
+                            {initials}
                         </div>
                         <div className="sidebar__seller-info">
                             <p className="sidebar__seller-name">{seller?.name ?? 'Seller'}</p>
-                            <p className="sidebar__seller-role">Seller</p>
+                            <p className="sidebar__seller-role">Seller Project</p>
                         </div>
                     </div>
                     <button

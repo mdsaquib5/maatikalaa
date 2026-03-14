@@ -5,13 +5,21 @@ import {
     addProduct,
     getProducts,
     deleteProduct,
-    updateStock
+    updateProduct,
+    updateStock,
+    getAllShopProducts,
+    getProductById
 } from "../controllers/productController.js";
 
 import { protectSeller } from "../middleware/sellerAuth.js";
 
 const productRouter = express.Router();
 
+// PUBLIC ROUTES (USER PANEL)
+productRouter.get("/all-products", getAllShopProducts);
+productRouter.get("/get-product/:id", getProductById);
+
+// PROTECTED ROUTES (SELLER PANEL)
 productRouter.post(
     "/add-product",
     protectSeller,
@@ -20,7 +28,7 @@ productRouter.post(
 );
 
 productRouter.get(
-    "/all-products",
+    "/seller-products",
     protectSeller,
     getProducts
 );
@@ -29,6 +37,13 @@ productRouter.delete(
     "/delete-product/:id",
     protectSeller,
     deleteProduct
+);
+
+productRouter.put(
+    "/update-product/:id",
+    protectSeller,
+    upload.array("images", 5),
+    updateProduct
 );
 
 productRouter.put(

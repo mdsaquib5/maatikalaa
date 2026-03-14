@@ -1,49 +1,74 @@
 'use client';
 
-import { useState, useRef, FormEvent, DragEvent } from 'react';
-import { useRouter } from 'next/navigation';
-import DashboardLayout from '../../components/layout/DashboardLayout';
+import { useState, useRef, FormEvent, DragEvent, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import DashboardLayout from '../../../components/layout/DashboardLayout';
 import { useSellerAuth } from '@/store/useSellerAuth';
 import api from '@/lib/api';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { MdCloudUpload, MdClose, MdAddBox, MdImage } from 'react-icons/md';
+import { MdCloudUpload, MdClose, MdSave, MdImage, MdArrowBack } from 'react-icons/md';
 
 const SIZES = ['S', 'M', 'L', 'XL', 'XXL', 'FREE SIZE'] as const;
 
-export default function AddProductPage() {
+export default function EditProductPage() {
     const { isAuthenticated } = useSellerAuth();
     const router = useRouter();
+    const { id } = useParams();
     const queryClient = useQueryClient();
 
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState('');
-    const [stock, setStock] = useState('10');
+    const [stock, setStock] = useState('');
     const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
     const [imageFiles, setImageFiles] = useState<File[]>([]);
     const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+    const [existingImages, setExistingImages] = useState<{ url: string; public_id: string }[]>([]);
     const [hotProduct, setHotProduct] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // Fetch product data
+    const { data: productData, isLoading: isProductLoading } = useQuery({
+        queryKey: ['product', id],
+        queryFn: async () => {
+            const res = await api.get(`/products/get-product/${id}`);
+            return res.data.product;
+        },
+        enabled: !!id
+    });
+
+    useEffect(() => {
+        if (productData) {
+            setName(productData.productName);
+            setDescription(productData.description);
+            setPrice(productData.price.toString());
+            setStock(productData.stock.toString());
+            setSelectedSizes(productData.sizes || []);
+            setHotProduct(productData.hotProduct || false);
+            setExistingImages(productData.images || []);
+        }
+    }, [productData]);
+
     const mutation = useMutation({
         mutationFn: async (formData: FormData) => {
-            const res = await api.post('/products/add-product', formData, {
+            const res = await api.put(`/products/update-product/${id}`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             return res.data;
         },
         onSuccess: () => {
-            toast.success('Product added successfully!');
+            toast.success('Product updated successfully!');
             queryClient.invalidateQueries({ queryKey: ['seller-products'] });
+            queryClient.invalidateQueries({ queryKey: ['product', id] });
             router.push('/products');
         },
         onError: (err: any) => {
-            const msg = err.response?.data?.message || 'Failed to add product';
+            const msg = err.response?.data?.message || 'Failed to update product';
             toast.error(msg);
-            console.error('Add product error:', err);
+            console.error('Update product error:', err);
         }
     });
 
@@ -64,10 +89,8 @@ export default function AddProductPage() {
         const toProcess = Array.from(files).slice(0, remaining);
         toProcess.forEach(file => {
             if (!file.type.startsWith('image/')) return;
-            
-            // Check file size (2MB = 2 * 1024 * 1024 bytes)
             if (file.size > 2 * 1024 * 1024) {
-                toast.error(`${file.name} is larger than 2MB. Please upload smaller images.`);
+                toast.error(`${file.name} is larger than 2MB.`);
                 return;
             }
             
@@ -92,7 +115,7 @@ export default function AddProductPage() {
         setIsDragging(true);
     };
 
-    const removeImage = (idx: number) => {
+    const removeNewImage = (idx: number) => {
         setImageFiles(prev => prev.filter((_, i) => i !== idx));
         setImagePreviews(prev => prev.filter((_, i) => i !== idx));
     };
@@ -104,7 +127,6 @@ export default function AddProductPage() {
         if (!price || isNaN(Number(price)) || Number(price) <= 0) errs.price = 'Enter a valid price.';
         if (!stock || isNaN(Number(stock)) || Number(stock) < 0) errs.stock = 'Enter a valid stock number.';
         if (selectedSizes.length === 0) errs.sizes = 'Select at least one size.';
-        if (imageFiles.length === 0) errs.images = 'At least one image is required.';
         setErrors(errs);
         return Object.keys(errs).length === 0;
     };
@@ -132,16 +154,20 @@ export default function AddProductPage() {
     };
 
     if (!isAuthenticated) return null;
-    
+    if (isProductLoading) return <DashboardLayout pageTitle="Edit Product" pageCrumb="...">Loading...</DashboardLayout>;
+
     const loading = mutation.isPending;
 
     return (
-        <DashboardLayout pageTitle="Add Product" pageCrumb="Dashboard • Add Product">
+        <DashboardLayout pageTitle="Edit Product" pageCrumb={`Dashboard • Products • Edit`}>
             <div className="section-header">
                 <div className="section-header__left">
-                    <h2 className="section-header__title">Add New Product</h2>
-                    <p className="section-header__subtitle">Fill in the details to list a new handcraft product.</p>
+                    <h2 className="section-header__title">Edit Product</h2>
+                    <p className="section-header__subtitle">Modify the details of your handcraft product.</p>
                 </div>
+                <button className="btn btn--secondary btn--sm" onClick={() => router.back()}>
+                    <MdArrowBack /> Back to Products
+                </button>
             </div>
 
             <form onSubmit={handleSubmit}>
@@ -156,14 +182,11 @@ export default function AddProductPage() {
                                 <h3 className="card__title">Product Information</h3>
                             </div>
                             <div className="card__body">
-                                {/* Name */}
                                 <div className="form-group">
-                                    <label className="form-label" htmlFor="prod-name">Product Name *</label>
+                                    <label className="form-label">Product Name *</label>
                                     <input
-                                        id="prod-name"
                                         type="text"
                                         className="form-input"
-                                        placeholder="e.g. Earthen Tandoor Mug"
                                         value={name}
                                         onChange={e => setName(e.target.value)}
                                         maxLength={120}
@@ -171,13 +194,10 @@ export default function AddProductPage() {
                                     {errors.name && <span className="form-error">{errors.name}</span>}
                                 </div>
 
-                                {/* Description */}
                                 <div className="form-group">
-                                    <label className="form-label" htmlFor="prod-desc">Description *</label>
+                                    <label className="form-label">Description *</label>
                                     <textarea
-                                        id="prod-desc"
                                         className="form-textarea"
-                                        placeholder="Describe your product — materials, craftsmanship, usage..."
                                         value={description}
                                         onChange={e => setDescription(e.target.value)}
                                         rows={4}
@@ -188,38 +208,28 @@ export default function AddProductPage() {
                                 </div>
 
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                                    {/* Price */}
                                     <div className="form-group">
-                                        <label className="form-label" htmlFor="prod-price">Price (₹) *</label>
+                                        <label className="form-label">Price (₹) *</label>
                                         <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                                            <span style={{ position: 'absolute', left: '14px', color: 'var(--color-accent-primary)', fontWeight: 700, fontSize: '1rem' }}>₹</span>
+                                            <span style={{ position: 'absolute', left: '14px', color: 'var(--color-accent-primary)', fontWeight: 700 }}>₹</span>
                                             <input
-                                                id="prod-price"
                                                 type="number"
                                                 className="form-input"
-                                                placeholder="0"
                                                 value={price}
                                                 onChange={e => setPrice(e.target.value)}
-                                                min={1}
-                                                step={1}
                                                 style={{ paddingLeft: '32px' }}
                                             />
                                         </div>
                                         {errors.price && <span className="form-error">{errors.price}</span>}
                                     </div>
 
-                                    {/* Stock */}
                                     <div className="form-group">
-                                        <label className="form-label" htmlFor="prod-stock">Stock *</label>
+                                        <label className="form-label">Stock *</label>
                                         <input
-                                            id="prod-stock"
                                             type="number"
                                             className="form-input"
-                                            placeholder="10"
                                             value={stock}
                                             onChange={e => setStock(e.target.value)}
-                                            min={0}
-                                            step={1}
                                         />
                                         {errors.stock && <span className="form-error">{errors.stock}</span>}
                                     </div>
@@ -235,18 +245,17 @@ export default function AddProductPage() {
                             <div className="card__body">
                                 <div className="size-selector">
                                     {SIZES.map(s => (
-                                        <label key={s} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                                        <label key={s}>
                                             <span
                                                 className={`size-option-label ${selectedSizes.includes(s) ? 'size-option-label--selected' : ''}`}
                                                 onClick={() => toggleSize(s)}
-                                                style={{ cursor: 'pointer' }}
                                             >
                                                 {s}
                                             </span>
                                         </label>
                                     ))}
                                 </div>
-                                {errors.sizes && <span className="form-error" style={{ marginTop: '8px', display: 'block' }}>{errors.sizes}</span>}
+                                {errors.sizes && <span className="form-error">{errors.sizes}</span>}
                             </div>
                         </div>
 
@@ -277,82 +286,68 @@ export default function AddProductPage() {
                         <div className="card">
                             <div className="card__header">
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                    <h3 className="card__title">Product Images</h3>
-                                    <p style={{ fontSize: '0.68rem', color: 'var(--color-error)', fontWeight: 600 }}>* Use images less than 2MB</p>
+                                    <h3 className="card__title">Replace Images</h3>
+                                    <p style={{ fontSize: '0.68rem', color: 'var(--color-error)', fontWeight: 600 }}>* Leave empty to keep existing images</p>
                                 </div>
-                                <span className="badge badge--neutral">{imageFiles.length}/4</span>
                             </div>
                             <div className="card__body">
-                                {imageFiles.length < 4 && (
-                                    <div
-                                        className={`upload-area ${isDragging ? 'upload-area--dragging' : ''}`}
-                                        onClick={() => fileInputRef.current?.click()}
-                                        onDrop={handleDrop}
-                                        onDragOver={handleDragOver}
-                                        onDragLeave={() => setIsDragging(false)}
-                                    >
-                                        <input
-                                            ref={fileInputRef}
-                                            type="file"
-                                            accept="image/*"
-                                            multiple
-                                            className="upload-area__input"
-                                            onChange={e => processFiles(e.target.files)}
-                                        />
-                                        <div className="upload-area__icon"><MdCloudUpload /></div>
-                                        <p className="upload-area__title">Drop images here or click to browse</p>
-                                        <p className="upload-area__subtitle">PNG, JPG, WEBP — Max 4 images (Less than 2MB each)</p>
+                                <div
+                                    className={`upload-area ${isDragging ? 'upload-area--dragging' : ''}`}
+                                    onClick={() => fileInputRef.current?.click()}
+                                    onDrop={handleDrop}
+                                    onDragOver={handleDragOver}
+                                    onDragLeave={() => setIsDragging(false)}
+                                >
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        multiple
+                                        className="upload-area__input"
+                                        onChange={e => processFiles(e.target.files)}
+                                    />
+                                    <div className="upload-area__icon"><MdCloudUpload /></div>
+                                    <p className="upload-area__subtitle">Max 4 images (Less than 2MB each)</p>
+                                </div>
+
+                                {/* New Image Previews */}
+                                {imagePreviews.length > 0 && (
+                                    <div style={{ marginTop: '16px' }}>
+                                        <p style={{ fontSize: '0.75rem', fontWeight: 700, marginBottom: '8px', color: 'var(--color-accent-primary)' }}>New Images to Upload:</p>
+                                        <div className="upload-previews" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+                                            {imagePreviews.map((src, idx) => (
+                                                <div key={idx} className="upload-preview">
+                                                    <img src={src} alt={`New ${idx + 1}`} />
+                                                    <button type="button" className="upload-preview__remove" onClick={() => removeNewImage(idx)}><MdClose /></button>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 )}
-                                {errors.images && <span className="form-error" style={{ marginBottom: '12px', display: 'block' }}>{errors.images}</span>}
 
-                                {imagePreviews.length > 0 && (
-                                    <div className="upload-previews" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
-                                        {imagePreviews.map((src, idx) => (
-                                            <div key={idx} className="upload-preview">
-                                                <img src={src} alt={`Preview ${idx + 1}`} />
-                                                <button
-                                                    type="button"
-                                                    className="upload-preview__remove"
-                                                    onClick={() => removeImage(idx)}
-                                                    style={{ opacity: 1 }}
-                                                >
-                                                    <MdClose />
-                                                </button>
-                                            </div>
-                                        ))}
-                                        {/* Empty slots */}
-                                        {imageFiles.length < 4 && Array.from({ length: 4 - imageFiles.length }).map((_, i) => (
-                                            <div key={`empty-${i}`} className="upload-preview" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', opacity: 0.3 }} onClick={() => fileInputRef.current?.click()}>
-                                                <MdImage size={24} style={{ color: 'var(--color-text-muted)' }} />
-                                            </div>
-                                        ))}
+                                {/* Existing Images */}
+                                {existingImages.length > 0 && imagePreviews.length === 0 && (
+                                    <div style={{ marginTop: '16px' }}>
+                                        <p style={{ fontSize: '0.75rem', fontWeight: 700, marginBottom: '8px' }}>Current Images:</p>
+                                        <div className="upload-previews" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+                                            {existingImages.map((img, idx) => (
+                                                <div key={idx} className="upload-preview" style={{ opacity: 0.7 }}>
+                                                    <img src={img.url} alt={`Existing ${idx + 1}`} />
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 )}
                             </div>
                         </div>
 
-                        {/* Submit */}
                         <button
-                            id="add-product-submit"
                             type="submit"
                             className="btn btn--primary btn--lg"
                             disabled={loading}
                             style={{ width: '100%' }}
                         >
-                            {loading ? (
-                                <><span className="spinner" style={{ borderColor: 'rgba(10,10,10,0.3)', borderTopColor: '#0a0a0a' }} /> Publishing…</>
-                            ) : (
-                                <><MdAddBox size={18} /> Publish Product</>
-                            )}
-                        </button>
-                        <button
-                            type="button"
-                            className="btn btn--secondary"
-                            style={{ width: '100%' }}
-                            onClick={() => router.back()}
-                        >
-                            Cancel
+                            {loading ? 'Updating...' : <><MdSave size={18} /> Save Changes</>}
                         </button>
                     </div>
                 </div>

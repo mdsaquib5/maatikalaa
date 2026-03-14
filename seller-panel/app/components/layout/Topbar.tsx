@@ -1,7 +1,9 @@
 'use client';
 
 import { MdMenu, MdNotifications, MdSearch } from 'react-icons/md';
-import { useSellerStore } from '../../store/SellerStore';
+import { useSellerAuth } from '@/store/useSellerAuth';
+import { useQuery } from '@tanstack/react-query';
+import api from '@/lib/api';
 
 interface TopbarProps {
     collapsed: boolean;
@@ -11,13 +13,22 @@ interface TopbarProps {
 }
 
 export default function Topbar({ collapsed, onMenuClick, pageTitle, pageCrumb }: TopbarProps) {
-    const { seller, orders } = useSellerStore();
+    const { seller } = useSellerAuth();
+    
+    const { data: ordersData } = useQuery({
+        queryKey: ['seller-orders'],
+        queryFn: async () => {
+            const res = await api.get('/orders/seller-orders');
+            return res.data;
+        }
+    });
 
     const initials = seller?.name
-        ? seller.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+        ? seller.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
         : 'S';
 
-    const newOrderCount = orders.filter(o => o.status === 'placed').length;
+    const orders = ordersData?.orders || [];
+    const newOrderCount = orders.filter((o: any) => o.orderStatus === 'PENDING').length;
 
     return (
         <header className={`topbar ${collapsed ? 'topbar--collapsed' : ''}`}>
@@ -43,11 +54,7 @@ export default function Topbar({ collapsed, onMenuClick, pageTitle, pageCrumb }:
                 </button>
                 <div className="topbar__seller-chip">
                     <div className="topbar__seller-avatar">
-                        {seller?.avatar ? (
-                            <img src={seller.avatar} alt={seller.name} />
-                        ) : (
-                            initials
-                        )}
+                        {initials}
                     </div>
                     <span className="topbar__seller-name">{seller?.name ?? 'Seller'}</span>
                 </div>

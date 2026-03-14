@@ -7,24 +7,27 @@ import {
     MdEmail, MdLock, MdPerson, MdVisibility, MdVisibilityOff,
     MdStorefront, MdError, MdArrowForward
 } from 'react-icons/md';
-import { useSellerStore } from '../../store/SellerStore';
+import { useSellerAuth } from '@/store/useSellerAuth';
+import api from '@/lib/api';
+import toast from 'react-hot-toast';
 
 export default function SignupPage() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [confirm, setConfirm] = useState('');
     const [showPass, setShowPass] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const { signup } = useSellerStore();
+    const { setAuth } = useSellerAuth();
     const router = useRouter();
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setError('');
-        if (!name || !email || !password || !confirm) {
+        if (!name || !email || !phone || !password || !confirm) {
             setError('Please fill in all fields.');
             return;
         }
@@ -36,13 +39,26 @@ export default function SignupPage() {
             setError('Passwords do not match.');
             return;
         }
+        
         setLoading(true);
-        const success = await signup(name, email, password);
-        setLoading(false);
-        if (success) {
-            router.replace('/overview');
-        } else {
-            setError('Something went wrong. Please try again.');
+        try {
+            const response = await api.post('/seller/signup', { name, email, password, phone });
+            
+            if (response.data.success) {
+                setAuth(response.data.seller);
+                toast.success('Account created successfully!');
+                router.replace('/overview');
+            } else {
+                setError(response.data.message || 'Signup failed');
+                toast.error(response.data.message || 'Signup failed');
+            }
+        } catch (err: any) {
+            const msg = err.response?.data?.message || 'Something went wrong';
+            setError(msg);
+            toast.error(msg);
+            console.error('Signup error:', err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -108,6 +124,24 @@ export default function SignupPage() {
                                 placeholder="you@example.com"
                                 value={email}
                                 onChange={e => setEmail(e.target.value)}
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    {/* Phone */}
+                    <div className="auth-form__group">
+                        <label className="auth-form__label" htmlFor="signup-phone">Phone Number</label>
+                        <div className="auth-form__input-wrap">
+                            <span className="auth-form__input-icon"><MdArrowForward /></span>
+                            <input
+                                id="signup-phone"
+                                type="tel"
+                                autoComplete="tel"
+                                className="auth-form__input"
+                                placeholder="+91 98765 43210"
+                                value={phone}
+                                onChange={e => setPhone(e.target.value)}
                                 required
                             />
                         </div>

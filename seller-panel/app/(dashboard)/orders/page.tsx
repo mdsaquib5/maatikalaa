@@ -1,135 +1,120 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import { useSellerStore, Order, OrderStatus, PaymentStatus } from '../../store/SellerStore';
-import { useToast } from '../../components/ui/Toast';
+import { useSellerAuth } from '@/store/useSellerAuth';
+import api from '@/lib/api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import {
     MdSearch, MdShoppingBag, MdImage, MdFilterList,
-    MdCheckCircle, MdLocalShipping, MdInventory, MdRadioButtonUnchecked
+    MdCheckCircle, MdRadioButtonUnchecked
 } from 'react-icons/md';
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-
-const ORDER_STATUSES: { value: OrderStatus | 'all'; label: string }[] = [
+const ORDER_STATUSES: { value: string; label: string }[] = [
     { value: 'all', label: 'All Orders' },
-    { value: 'placed', label: 'Placed' },
-    { value: 'packing', label: 'Packing' },
-    { value: 'shipped', label: 'Shipped' },
-    { value: 'out_for_delivery', label: 'Out for Delivery' },
-    { value: 'delivered', label: 'Delivered' },
+    { value: 'PENDING', label: 'Placed' },
+    { value: 'PACKING', label: 'Packing' },
+    { value: 'SHIPPED', label: 'Shipped' },
+    { value: 'DELIVERED', label: 'Delivered' },
 ];
 
-const STATUS_FLOW: OrderStatus[] = ['placed', 'packing', 'shipped', 'out_for_delivery', 'delivered'];
+const STATUS_FLOW = ['PENDING', 'PACKING', 'SHIPPED', 'DELIVERED'];
 
-function statusBadge(status: OrderStatus) {
-    const map: Record<OrderStatus, { cls: string; label: string }> = {
-        placed: { cls: 'badge--info', label: 'Placed' },
-        packing: { cls: 'badge--warning', label: 'Packing' },
-        shipped: { cls: 'badge--accent', label: 'Shipped' },
-        out_for_delivery: { cls: 'badge--warning', label: 'Out for Delivery' },
-        delivered: { cls: 'badge--success', label: 'Delivered' },
+function statusBadge(status: string) {
+    const map: Record<string, { cls: string; label: string }> = {
+        PENDING: { cls: 'badge--info', label: 'Placed' },
+        PACKING: { cls: 'badge--warning', label: 'Packing' },
+        SHIPPED: { cls: 'badge--accent', label: 'Shipped' },
+        DELIVERED: { cls: 'badge--success', label: 'Delivered' },
+        CANCELLED: { cls: 'badge--error', label: 'Cancelled' },
     };
-    const d = map[status];
+    const d = map[status] || { cls: 'badge--neutral', label: status || 'Placed' };
     return <span className={`badge ${d.cls}`}>{d.label}</span>;
 }
 
-function paymentBadge(status: PaymentStatus) {
-    const map: Record<PaymentStatus, { cls: string; label: string }> = {
-        paid: { cls: 'badge--success', label: 'Paid' },
-        pending: { cls: 'badge--warning', label: 'Pending' },
-        failed: { cls: 'badge--error', label: 'Failed' },
-        refunded: { cls: 'badge--neutral', label: 'Refunded' },
+function paymentBadge(status: string) {
+    const map: Record<string, { cls: string; label: string }> = {
+        PAID: { cls: 'badge--success', label: 'Paid' },
+        PENDING: { cls: 'badge--warning', label: 'Pending' },
+        FAILED: { cls: 'badge--error', label: 'Failed' },
     };
-    const d = map[status];
+    const d = map[status] || { cls: 'badge--neutral', label: status };
     return <span className={`badge ${d.cls}`}>{d.label}</span>;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-
-function OrderDetailModal({ order, onClose, onStatusChange }: {
-    order: Order;
+function OrderDetailModal({ order, onClose, onStatusChange, updating }: {
+    order: any;
     onClose: () => void;
-    onStatusChange: (status: OrderStatus) => void;
+    onStatusChange: (status: string) => void;
+    updating: boolean;
 }) {
-    const currentIdx = STATUS_FLOW.indexOf(order.status);
+    const currentIdx = STATUS_FLOW.indexOf(order.orderStatus);
 
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal" style={{ maxWidth: '600px' }} onClick={e => e.stopPropagation()}>
                 <div className="modal__header">
-                    <h3 className="modal__title">Order {order.id}</h3>
+                    <h3 className="modal__title">Order #{order._id.slice(-6).toUpperCase()}</h3>
                     <button className="modal__close" onClick={onClose}>✕</button>
                 </div>
 
-                {/* Order Details Grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
-                    {/* Product */}
                     <div>
-                        <p style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Product</p>
-                        <div className="order-product">
-                            <div className="order-product__img">
-                                {order.productImage ? (
-                                    <img src={order.productImage} alt={order.productName} />
-                                ) : (
-                                    <div className="order-product__img-placeholder"><MdImage /></div>
-                                )}
+                        <p style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Product(s)</p>
+                        {order.items.map((item: any, i: number) => (
+                            <div key={i} className="order-product" style={{ marginBottom: '8px' }}>
+                                <div className="order-product__img">
+                                    {item.productId?.images?.[0]?.url ? (
+                                        <img src={item.productId.images[0].url} alt={item.productId.productName} />
+                                    ) : (
+                                        <div className="order-product__img-placeholder"><MdImage /></div>
+                                    )}
+                                </div>
+                                <div className="order-product__details">
+                                    <p className="order-product__name">{item.productId?.productName}</p>
+                                    <p className="order-product__meta">Size: {item.size || 'N/A'} · Qty: {item.quantity || item.qty || 1}</p>
+                                </div>
                             </div>
-                            <div className="order-product__details">
-                                <p className="order-product__name">{order.productName}</p>
-                                <p className="order-product__meta">Size: {order.size} · Qty: {order.quantity}</p>
-                                <p className="order-product__meta">Total items: {order.totalItems}</p>
-                            </div>
-                        </div>
+                        ))}
                     </div>
 
-                    {/* Customer */}
                     <div>
                         <p style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Customer</p>
-                        <p className="order-customer__name">{order.customer.name}</p>
-                        <p className="order-customer__address">{order.customer.address}</p>
-                        <p className="order-customer__phone">{order.customer.phone}</p>
+                        <p className="order-customer__name">{order.userId?.name}</p>
+                        <p className="order-customer__phone">{order.userId?.email}</p>
+                        <p className="order-customer__phone">{order.phone || 'No phone provided'}</p>
+                        <p style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', marginTop: '8px', lineHeight: '1.4' }}>
+                            {order.shippingAddress || 'No address provided'}
+                        </p>
                     </div>
 
-                    {/* Payment */}
                     <div>
                         <p style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Payment</p>
                         <p style={{ fontSize: '0.85rem', color: 'var(--color-text-heading)', fontWeight: 600, marginBottom: '4px' }}>
-                            ₹{order.payment.amount.toLocaleString('en-IN')}
+                            ₹{order.sellerTotalAmount.toLocaleString('en-IN')}
                         </p>
-                        <p style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', marginBottom: '8px' }}>via {order.payment.method}</p>
-                        {paymentBadge(order.payment.status)}
+                        <p style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', marginBottom: '8px' }}>via {order.paymentMethod}</p>
+                        {paymentBadge(order.paymentStatus)}
                     </div>
 
-                    {/* Date / Order */}
                     <div>
                         <p style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Order Date</p>
                         <p style={{ fontSize: '0.85rem', color: 'var(--color-text-heading)' }}>
-                            {new Date(order.orderDate).toLocaleDateString('en-IN', {
+                            {new Date(order.createdAt).toLocaleDateString('en-IN', {
                                 weekday: 'short', day: 'numeric', month: 'long', year: 'numeric'
                             })}
-                        </p>
-                        <p style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
-                            {new Date(order.orderDate).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                         </p>
                     </div>
                 </div>
 
-                {/* Status Stepper */}
                 <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--color-glass-border)', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
-                    <p style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px' }}>Order Status</p>
+                    <p style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px' }}>Status Tracker</p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0', overflowX: 'auto' }}>
                         {STATUS_FLOW.map((s, idx) => {
                             const done = idx <= currentIdx;
                             const active = idx === currentIdx;
-                            const labels: Record<OrderStatus, string> = {
-                                placed: 'Placed',
-                                packing: 'Packing',
-                                shipped: 'Shipped',
-                                out_for_delivery: 'Out for Delivery',
-                                delivered: 'Delivered',
-                            };
                             return (
                                 <div key={s} style={{ display: 'flex', alignItems: 'center', flex: idx < STATUS_FLOW.length - 1 ? 1 : 'none' }}>
                                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', minWidth: '60px' }}>
@@ -140,30 +125,16 @@ function OrderDetailModal({ order, onClose, onStatusChange }: {
                                             border: `2px solid ${done ? 'var(--color-accent-primary)' : 'var(--color-glass-border)'}`,
                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                                             color: done ? (active ? '#0a0a0a' : 'var(--color-accent-primary)') : 'var(--color-text-muted)',
-                                            fontSize: '0.7rem',
-                                            flexShrink: 0,
+                                            fontSize: '14px'
                                         }}>
                                             {done && !active ? <MdCheckCircle size={14} /> : <MdRadioButtonUnchecked size={12} />}
                                         </div>
-                                        <span style={{
-                                            fontSize: '0.62rem',
-                                            fontWeight: active ? 700 : 500,
-                                            color: done ? 'var(--color-accent-primary)' : 'var(--color-text-muted)',
-                                            textAlign: 'center',
-                                            lineHeight: 1.3,
-                                            whiteSpace: 'nowrap',
-                                        }}>
-                                            {labels[s]}
+                                        <span style={{ fontSize: '0.62rem', fontWeight: active ? 700 : 500, color: done ? 'var(--color-accent-primary)' : 'var(--color-text-muted)' }}>
+                                            {s}
                                         </span>
                                     </div>
                                     {idx < STATUS_FLOW.length - 1 && (
-                                        <div style={{
-                                            flex: 1,
-                                            height: 2,
-                                            background: done && idx < currentIdx ? 'var(--color-accent-primary)' : 'var(--color-glass-border)',
-                                            margin: '0 4px',
-                                            marginBottom: '20px',
-                                        }} />
+                                        <div style={{ flex: 1, height: 2, background: done && idx < currentIdx ? 'var(--color-accent-primary)' : 'var(--color-glass-border)', margin: '0 4px', marginBottom: '20px' }} />
                                     )}
                                 </div>
                             );
@@ -171,18 +142,16 @@ function OrderDetailModal({ order, onClose, onStatusChange }: {
                     </div>
                 </div>
 
-                {/* Update Status */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'flex-end' }}>
                     <span style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>Update Status:</span>
                     <select
                         className="order-status-select"
-                        value={order.status}
-                        onChange={e => onStatusChange(e.target.value as OrderStatus)}
+                        value={order.orderStatus}
+                        onChange={e => onStatusChange(e.target.value)}
+                        disabled={updating}
                     >
                         {STATUS_FLOW.map(s => (
-                            <option key={s} value={s}>
-                                {s === 'out_for_delivery' ? 'Out for Delivery' : s.charAt(0).toUpperCase() + s.slice(1)}
-                            </option>
+                            <option key={s} value={s}>{s}</option>
                         ))}
                     </select>
                     <button className="btn btn--secondary btn--sm" onClick={onClose}>Close</button>
@@ -192,51 +161,63 @@ function OrderDetailModal({ order, onClose, onStatusChange }: {
     );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-
 export default function OrdersPage() {
-    const { isAuthenticated, orders, updateOrderStatus } = useSellerStore();
-    const { showToast } = useToast();
+    const { isAuthenticated } = useSellerAuth();
     const router = useRouter();
     const [search, setSearch] = useState('');
-    const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all');
-    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+    const queryClient = useQueryClient();
 
-    useEffect(() => {
-        if (!isAuthenticated) router.replace('/login');
-    }, [isAuthenticated, router]);
+    const { data, isLoading } = useQuery({
+        queryKey: ['seller-orders'],
+        queryFn: async () => {
+            const res = await api.get('/orders/seller-orders');
+            return res.data;
+        },
+        enabled: isAuthenticated,
+    });
+
+    const updateStatusMutation = useMutation({
+        mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
+            const res = await api.put('/orders/update-status', { orderId, status });
+            return res.data;
+        },
+        onSuccess: () => {
+            toast.success('Order status updated');
+            queryClient.invalidateQueries({ queryKey: ['seller-orders'] });
+            if (selectedOrder) {
+                const updated = data.orders.find((o: any) => o._id === selectedOrder._id);
+                setSelectedOrder(updated);
+            }
+        },
+        onError: (err: any) => {
+            toast.error(err.response?.data?.message || 'Failed to update order');
+        }
+    });
 
     if (!isAuthenticated) return null;
 
-    const filtered = orders.filter(o => {
+    const orders = data?.orders || [];
+
+    const filtered = orders.filter((o: any) => {
         const matchSearch =
-            o.id.toLowerCase().includes(search.toLowerCase()) ||
-            o.productName.toLowerCase().includes(search.toLowerCase()) ||
-            o.customer.name.toLowerCase().includes(search.toLowerCase()) ||
-            o.customer.phone.includes(search);
-        const matchStatus = statusFilter === 'all' || o.status === statusFilter;
+            o._id.toLowerCase().includes(search.toLowerCase()) ||
+            o.items[0]?.productId?.productName.toLowerCase().includes(search.toLowerCase()) ||
+            o.userId?.name.toLowerCase().includes(search.toLowerCase());
+        const matchStatus = statusFilter === 'all' || o.orderStatus === statusFilter;
         return matchSearch && matchStatus;
     });
 
-    // Sort newest first
-    const sorted = [...filtered].sort((a, b) =>
-        new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()
-    );
-
-    const handleStatusChange = (status: OrderStatus) => {
+    const handleStatusChange = (status: string) => {
         if (!selectedOrder) return;
-        updateOrderStatus(selectedOrder.id, status);
-        // Update local ref too
-        setSelectedOrder(prev => prev ? { ...prev, status } : null);
-        showToast(`Order ${selectedOrder.id} updated to "${status.replace('_', ' ')}".`, 'success');
+        updateStatusMutation.mutate({ orderId: selectedOrder._id, status });
     };
 
-    const handleInlineStatusChange = (orderId: string, status: OrderStatus) => {
-        updateOrderStatus(orderId, status);
-        showToast(`Order status updated.`, 'success');
+    const fmt = (n: any) => {
+        if (n === null || n === undefined) return '₹0';
+        return `₹${Number(n).toLocaleString('en-IN')}`;
     };
-
-    const fmt = (n: number) => `₹${n.toLocaleString('en-IN')}`;
 
     return (
         <DashboardLayout pageTitle="All Orders" pageCrumb="Dashboard • Orders">
@@ -245,6 +226,7 @@ export default function OrdersPage() {
                     order={selectedOrder}
                     onClose={() => setSelectedOrder(null)}
                     onStatusChange={handleStatusChange}
+                    updating={updateStatusMutation.isPending}
                 />
             )}
 
@@ -255,7 +237,6 @@ export default function OrdersPage() {
                 </div>
             </div>
 
-            {/* Filters */}
             <div className="filter-row">
                 <div className="search-bar" style={{ maxWidth: '340px', width: '100%' }}>
                     <span className="search-bar__icon"><MdSearch /></span>
@@ -275,7 +256,6 @@ export default function OrdersPage() {
                             key={s.value}
                             className={`btn btn--sm ${statusFilter === s.value ? 'btn--primary' : 'btn--secondary'}`}
                             onClick={() => setStatusFilter(s.value)}
-                            id={`filter-${s.value}`}
                         >
                             {s.label}
                         </button>
@@ -283,13 +263,13 @@ export default function OrdersPage() {
                 </div>
             </div>
 
-            {/* Table */}
             <div className="orders-table-wrap">
-                {sorted.length === 0 ? (
+                {isLoading ? (
+                    <div style={{ padding: '80px', textAlign: 'center', opacity: 0.5 }}>Loading orders...</div>
+                ) : filtered.length === 0 ? (
                     <div className="empty-state">
                         <div className="empty-state__icon"><MdShoppingBag /></div>
                         <p className="empty-state__title">No orders found</p>
-                        <p className="empty-state__text">Try changing your filters or search terms.</p>
                     </div>
                 ) : (
                     <table className="orders-table">
@@ -306,77 +286,56 @@ export default function OrdersPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {sorted.map(order => (
-                                <tr key={order.id}>
-                                    <td>
-                                        <span className="order-id">{order.id}</span>
-                                    </td>
+                            {filtered.map((order: any) => (
+                                <tr key={order._id}>
+                                    <td><span className="order-id">#{order._id.slice(-6).toUpperCase()}</span></td>
                                     <td>
                                         <div className="order-product">
                                             <div className="order-product__img">
-                                                {order.productImage ? (
-                                                    <img src={order.productImage} alt={order.productName} />
+                                                {order.items[0]?.productId?.images?.[0]?.url ? (
+                                                    <img src={order.items[0].productId.images[0].url} alt={order.items[0].productId.productName} />
                                                 ) : (
                                                     <div className="order-product__img-placeholder"><MdImage /></div>
                                                 )}
                                             </div>
                                             <div className="order-product__details">
-                                                <p className="order-product__name">{order.productName}</p>
-                                                <p className="order-product__meta">Total: {order.totalItems} item{order.totalItems !== 1 ? 's' : ''}</p>
+                                                <p className="order-product__name">{order.items[0]?.productId?.productName}</p>
+                                                {order.items.length > 1 && <p className="order-product__meta">+{order.items.length - 1} more</p>}
                                             </div>
                                         </div>
                                     </td>
                                     <td>
-                                        <p className="order-customer__name">{order.customer.name}</p>
-                                        <p className="order-customer__phone">{order.customer.phone}</p>
-                                        <p className="order-customer__address" style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                            {order.customer.address}
-                                        </p>
+                                        <p className="order-customer__name">{order.userId?.name}</p>
+                                        <p className="order-customer__phone">{order.userId?.email}</p>
                                     </td>
                                     <td style={{ whiteSpace: 'nowrap' }}>
-                                        <span className="badge badge--neutral" style={{ marginRight: '4px' }}>{order.size}</span>
-                                        <span style={{ fontSize: '0.82rem', color: 'var(--color-text-body)' }}>× {order.quantity}</span>
+                                        <span className="badge badge--neutral" style={{ marginRight: '4px' }}>{order.items[0]?.size || 'N/A'}</span>
+                                        <span style={{ fontSize: '0.82rem', color: 'var(--color-text-body)' }}>× {order.items[0]?.quantity || order.items[0]?.qty || 1}</span>
                                     </td>
                                     <td>
                                         <p style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--color-accent-primary)', marginBottom: '4px' }}>
-                                            {fmt(order.payment.amount)}
+                                            {fmt(order.sellerTotalAmount)}
                                         </p>
-                                        <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '6px' }}>{order.payment.method}</p>
-                                        {paymentBadge(order.payment.status)}
+                                        {paymentBadge(order.paymentStatus)}
                                     </td>
                                     <td style={{ whiteSpace: 'nowrap' }}>
-                                        <p style={{ fontSize: '0.82rem', color: 'var(--color-text-heading)' }}>
-                                            {new Date(order.orderDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                                        </p>
-                                        <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
-                                            {new Date(order.orderDate).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-                                        </p>
+                                        <p style={{ fontSize: '0.82rem' }}>{new Date(order.createdAt).toLocaleDateString()}</p>
                                     </td>
                                     <td>
-                                        {statusBadge(order.status)}
+                                        <select
+                                            className="order-status-select"
+                                            value={order.orderStatus || 'PENDING'}
+                                            onChange={(e) => updateStatusMutation.mutate({ orderId: order._id, status: e.target.value })}
+                                            disabled={updateStatusMutation.isPending && selectedOrder?._id === order._id}
+                                            style={{ fontSize: '0.75rem', padding: '4px 24px 4px 8px' }}
+                                        >
+                                            {STATUS_FLOW.map(s => (
+                                                <option key={s} value={s}>{s}</option>
+                                            ))}
+                                        </select>
                                     </td>
                                     <td>
-                                        <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
-                                            <button
-                                                id={`order-detail-${order.id}`}
-                                                className="btn btn--secondary btn--sm"
-                                                onClick={() => setSelectedOrder(order)}
-                                            >
-                                                Details
-                                            </button>
-                                            <select
-                                                className="order-status-select"
-                                                value={order.status}
-                                                onChange={e => handleInlineStatusChange(order.id, e.target.value as OrderStatus)}
-                                                title="Update status"
-                                            >
-                                                {STATUS_FLOW.map(s => (
-                                                    <option key={s} value={s}>
-                                                        {s === 'out_for_delivery' ? 'Out for Delivery' : s.charAt(0).toUpperCase() + s.slice(1)}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
+                                        <button className="btn btn--secondary btn--sm" onClick={() => setSelectedOrder(order)}>Details</button>
                                     </td>
                                 </tr>
                             ))}

@@ -1,20 +1,25 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import { useSellerStore, Product } from '../../store/SellerStore';
-import { useToast } from '../../components/ui/Toast';
-import { MdSearch, MdDeleteOutline, MdImage, MdAddBox } from 'react-icons/md';
+import { useSellerAuth } from '@/store/useSellerAuth';
+import api from '@/lib/api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
+import { Product } from '../../store/SellerStore';
+import { MdSearch, MdDeleteOutline, MdImage, MdAddBox, MdEdit } from 'react-icons/md';
 
 function ConfirmDeleteModal({
     product,
     onConfirm,
     onCancel,
+    loading
 }: {
     product: Product;
     onConfirm: () => void;
     onCancel: () => void;
+    loading: boolean;
 }) {
     return (
         <div className="modal-overlay" onClick={onCancel}>
@@ -24,12 +29,14 @@ function ConfirmDeleteModal({
                     <button className="modal__close" onClick={onCancel}>✕</button>
                 </div>
                 <p style={{ fontSize: '0.9rem', color: 'var(--color-text-body)', lineHeight: '1.6', marginBottom: '24px' }}>
-                    Are you sure you want to delete <span style={{ color: 'var(--color-text-heading)', fontWeight: 600 }}>"{product.name}"</span>?
+                    Are you sure you want to delete <span style={{ color: 'var(--color-text-heading)', fontWeight: 600 }}>"{product.productName}"</span>?
                     This action cannot be undone.
                 </p>
                 <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-                    <button className="btn btn--secondary" onClick={onCancel}>Cancel</button>
-                    <button className="btn btn--danger" onClick={onConfirm}>Delete</button>
+                    <button className="btn btn--secondary" onClick={onCancel} disabled={loading}>Cancel</button>
+                    <button className="btn btn--danger" onClick={onConfirm} disabled={loading}>
+                        {loading ? 'Deleting...' : 'Delete'}
+                    </button>
                 </div>
             </div>
         </div>
@@ -37,28 +44,48 @@ function ConfirmDeleteModal({
 }
 
 export default function ProductsPage() {
-    const { isAuthenticated, products, deleteProduct } = useSellerStore();
-    const { showToast } = useToast();
+    const { isAuthenticated } = useSellerAuth();
     const router = useRouter();
     const [search, setSearch] = useState('');
     const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
+    const queryClient = useQueryClient();
 
-    useEffect(() => {
-        if (!isAuthenticated) router.replace('/login');
-    }, [isAuthenticated, router]);
+    const { data, isLoading } = useQuery({
+        queryKey: ['seller-products'],
+        queryFn: async () => {
+            const res = await api.get('/products/seller-products');
+            return res.data;
+        },
+        enabled: isAuthenticated,
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: async (id: string) => {
+            const res = await api.delete(`/products/delete-product/${id}`);
+            return res.data;
+        },
+        onSuccess: () => {
+            toast.success('Product deleted successfully');
+            queryClient.invalidateQueries({ queryKey: ['seller-products'] });
+            setDeleteTarget(null);
+        },
+        onError: (err: any) => {
+            toast.error(err.response?.data?.message || 'Failed to delete product');
+        }
+    });
 
     if (!isAuthenticated) return null;
 
+    const products: Product[] = data?.products || [];
+
     const filtered = products.filter(p =>
-        p.name.toLowerCase().includes(search.toLowerCase()) ||
+        p.productName.toLowerCase().includes(search.toLowerCase()) ||
         p.description.toLowerCase().includes(search.toLowerCase())
     );
 
     const handleDelete = () => {
         if (!deleteTarget) return;
-        deleteProduct(deleteTarget.id);
-        showToast(`"${deleteTarget.name}" deleted.`, 'success');
-        setDeleteTarget(null);
+        deleteMutation.mutate(deleteTarget._id);
     };
 
     const fmt = (n: number) => `₹${n.toLocaleString('en-IN')}`;
@@ -70,6 +97,7 @@ export default function ProductsPage() {
                     product={deleteTarget}
                     onConfirm={handleDelete}
                     onCancel={() => setDeleteTarget(null)}
+                    loading={deleteMutation.isPending}
                 />
             )}
 
@@ -100,7 +128,9 @@ export default function ProductsPage() {
                 </div>
             </div>
 
-            {filtered.length === 0 ? (
+            {isLoading ? (
+                <div style={{ padding: '80px', textAlign: 'center', opacity: 0.5 }}>Loading products...</div>
+            ) : filtered.length === 0 ? (
                 <div className="card">
                     <div className="empty-state">
                         <div className="empty-state__icon"><MdImage /></div>
@@ -122,25 +152,40 @@ export default function ProductsPage() {
             ) : (
                 <div className="products-grid">
                     {filtered.map(product => (
-                        <div key={product.id} className="product-card">
+                        <div key={product._id} className="product-card">
                             <div className="product-card__image">
-                                {product.images[0] ? (
-                                    <img src={product.images[0]} alt={product.name} />
+                                {product.images[0]?.url ? (
+                                    <img src={product.images[0].url} alt={product.productName} />
                                 ) : (
                                     <div className="product-card__no-img"><MdImage /></div>
                                 )}
                             </div>
                             <div className="product-card__body">
-                                <p className="product-card__title">{product.name}</p>
+                                <p className="product-card__title">{product.productName}</p>
                                 <p className="product-card__price">{fmt(product.price)}</p>
                                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '14px' }}>
                                     {product.sizes.map(s => (
                                         <span key={s} className="badge badge--neutral" style={{ fontSize: '0.68rem' }}>{s}</span>
                                     ))}
                                 </div>
+                                <div style={{ marginBottom: '14px', display: 'flex', gap: '6px' }}>
+                                    <span className={`badge ${product.stock > 0 ? 'badge--success' : 'badge--error'}`} style={{ fontSize: '0.68rem' }}>
+                                        {product.stock > 0 ? `Stock: ${product.stock}` : 'Out of Stock'}
+                                    </span>
+                                    {product.hotProduct && (
+                                        <span className="badge badge--accent" style={{ fontSize: '0.68rem' }}>Featured</span>
+                                    )}
+                                </div>
                                 <div className="product-card__actions">
                                     <button
-                                        id={`delete-product-${product.id}`}
+                                        className="btn btn--secondary btn--sm"
+                                        style={{ flex: 1 }}
+                                        onClick={() => router.push(`/edit-product/${product._id}`)}
+                                    >
+                                        <MdEdit size={15} /> Edit
+                                    </button>
+                                    <button
+                                        id={`delete-product-${product._id}`}
                                         className="btn btn--danger btn--sm"
                                         style={{ flex: 1 }}
                                         onClick={() => setDeleteTarget(product)}
