@@ -1,22 +1,33 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { 
+    MdEmail, MdLock, MdVisibility, MdVisibilityOff, 
+    MdOutlinePerson, MdError, MdArrowForward 
+} from 'react-icons/md';
 import { useAuth } from '@/store/useAuth';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
-import { FiArrowRight, FiMail, FiLock } from 'react-icons/fi';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPass, setShowPass] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
     const { setAuth } = useAuth();
     const router = useRouter();
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
+        setError('');
+        if (!email || !password) {
+            setError('Please fill in all fields.');
+            return;
+        }
+
         setLoading(true);
         try {
             const res = await api.post('/user/login', { email, password });
@@ -24,128 +35,114 @@ export default function LoginPage() {
             toast.success('Welcome back!');
             router.push('/');
         } catch (err: any) {
-            toast.error(err.response?.data?.message || 'Login failed');
+            const msg = err.response?.data?.message || 'Login failed';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <main className="auth-page" style={{ 
-            minHeight: '100vh', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            padding: '20px', 
-            background: 'var(--color-bg-primary)',
-            backgroundImage: 'linear-gradient(rgba(10, 10, 10, 0.8), rgba(10, 10, 10, 0.9)), url("/hero-bg-2.webp")',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundAttachment: 'fixed'
-        }}>
-            <div className="auth-container" style={{ maxWidth: '480px', width: '100%', position: 'relative', zIndex: 2 }}>
-                
-                {/* Logo Area */}
-                <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                    <Link href="/">
-                        <img src="/logo.png" alt="Maatikalaa" style={{ height: '50px', marginBottom: '24px', display: 'inline-block' }} />
-                    </Link>
-                    <h1 style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--color-text-heading)', letterSpacing: '-1px' }}>Welcome Back</h1>
-                    <p style={{ color: 'var(--color-text-body)', fontSize: '1rem', marginTop: '8px' }}>Sign in to continue your artisan journey.</p>
-                </div>
-
-                {/* Glass Card */}
-                <div style={{ 
-                    background: 'var(--color-glass-bg)', 
-                    backdropFilter: 'blur(24px) saturate(150%)', 
-                    border: '1px solid var(--color-glass-border)', 
-                    borderRadius: '24px', 
-                    padding: '48px',
-                    boxShadow: '0 24px 64px rgba(0,0,0,0.4)'
-                }}>
-                    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-                        <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            <label style={{ color: 'var(--color-text-heading)', fontSize: '0.85rem', fontWeight: 600, letterSpacing: '0.5px' }}>EMAIL ADDRESS</label>
-                            <div style={{ position: 'relative' }}>
-                                <FiMail style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
-                                <input 
-                                    type="email" 
-                                    style={{ 
-                                        width: '100%', 
-                                        background: 'rgba(255, 255, 255, 0.03)', 
-                                        border: '1px solid rgba(255, 255, 255, 0.1)', 
-                                        borderRadius: '12px', 
-                                        padding: '14px 18px 14px 48px', 
-                                        color: '#fff', 
-                                        outline: 'none',
-                                        transition: 'all 0.3s ease'
-                                    }}
-                                    placeholder="Enter your email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                />
-                            </div>
-                        </div>
-
-                        <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            <label style={{ color: 'var(--color-text-heading)', fontSize: '0.85rem', fontWeight: 600, letterSpacing: '0.5px' }}>PASSWORD</label>
-                            <div style={{ position: 'relative' }}>
-                                <FiLock style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
-                                <input 
-                                    type="password" 
-                                    style={{ 
-                                        width: '100%', 
-                                        background: 'rgba(255, 255, 255, 0.03)', 
-                                        border: '1px solid rgba(255, 255, 255, 0.1)', 
-                                        borderRadius: '12px', 
-                                        padding: '14px 18px 14px 48px', 
-                                        color: '#fff', 
-                                        outline: 'none',
-                                        transition: 'all 0.3s ease'
-                                    }}
-                                    placeholder="••••••••"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                />
-                            </div>
-                        </div>
-
-                        <button 
-                            type="submit" 
-                            disabled={loading}
-                            style={{ 
-                                background: 'transparent', 
-                                color: 'var(--color-accent-primary)', 
-                                border: '1px solid var(--color-accent-primary)',
-                                borderRadius: '12px', 
-                                padding: '16px', 
-                                fontWeight: 700, 
-                                cursor: 'pointer', 
-                                marginTop: '10px', 
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '12px',
-                                transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
-                            }}
-                        >
-                            {loading ? 'AUTHENTICATING...' : (
-                                <>
-                                    SIGN IN <FiArrowRight />
-                                </>
-                            )}
-                        </button>
-                    </form>
-
-                    <div style={{ textAlign: 'center', marginTop: '32px', paddingTop: '32px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                        <p style={{ color: 'var(--color-text-body)', fontSize: '0.95rem' }}>
-                            New to the studio? <Link href="/signup" style={{ color: 'var(--color-accent-primary)', fontWeight: 600, textDecoration: 'none' }}>Create Account</Link>
-                        </p>
-                    </div>
-                </div>
+        <div className="auth-page">
+            {/* Background orbs */}
+            <div className="auth-page__bg">
+                <div className="auth-page__bg-orb auth-page__bg-orb--1" />
+                <div className="auth-page__bg-orb auth-page__bg-orb--2" />
             </div>
-        </main>
+
+            <div className="auth-card">
+                {/* Logo */}
+                <div className="auth-logo">
+                    <span className="auth-logo__text">Maatikala</span>
+                    <span className="auth-logo__dot" />
+                </div>
+
+                {/* Badge */}
+                <div style={{ marginBottom: '12px' }}>
+                    <span className="auth-badge">
+                        <MdOutlinePerson size={12} />
+                        Member Login
+                    </span>
+                </div>
+
+                <h1 className="auth-title">Welcome back</h1>
+                <p className="auth-subtitle">Sign in to explore handcrafted elegance.</p>
+
+                {error && (
+                    <div className="auth-error" style={{ marginBottom: '16px' }}>
+                        <MdError />
+                        {error}
+                    </div>
+                )}
+
+                <form className="auth-form" onSubmit={handleSubmit}>
+                    {/* Email */}
+                    <div className="auth-form__group">
+                        <label className="auth-form__label" htmlFor="login-email">Email Address</label>
+                        <div className="auth-form__input-wrap">
+                            <span className="auth-form__input-icon"><MdEmail /></span>
+                            <input
+                                id="login-email"
+                                type="email"
+                                autoComplete="email"
+                                className="auth-form__input"
+                                placeholder="you@example.com"
+                                value={email}
+                                onChange={e => setEmail(e.target.value)}
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    {/* Password */}
+                    <div className="auth-form__group">
+                        <label className="auth-form__label" htmlFor="login-password">Password</label>
+                        <div className="auth-form__input-wrap">
+                            <span className="auth-form__input-icon"><MdLock /></span>
+                            <input
+                                id="login-password"
+                                type={showPass ? 'text' : 'password'}
+                                autoComplete="current-password"
+                                className="auth-form__input"
+                                placeholder="Min. 6 characters"
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                                required
+                            />
+                            <button
+                                type="button"
+                                className="auth-form__eye-toggle"
+                                onClick={() => setShowPass(s => !s)}
+                                tabIndex={-1}
+                                aria-label={showPass ? 'Hide password' : 'Show password'}
+                            >
+                                {showPass ? <MdVisibilityOff /> : <MdVisibility />}
+                            </button>
+                        </div>
+                    </div>
+
+                    <button
+                        id="login-submit"
+                        type="submit"
+                        className="auth-submit-btn"
+                        disabled={loading}
+                    >
+                        {loading ? <span className="spinner" /> : (
+                            <>Sign In <MdArrowForward /></>
+                        )}
+                    </button>
+                </form>
+
+                <div className="auth-divider" style={{ marginTop: '32px', marginBottom: '20px' }}>
+                    <span>or</span>
+                </div>
+
+                <p className="auth-redirect">
+                    Don&apos;t have an account?{' '}
+                    <Link href="/signup">Create account</Link>
+                </p>
+            </div>
+        </div>
     );
 }
