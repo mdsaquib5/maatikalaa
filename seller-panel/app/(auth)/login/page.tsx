@@ -141,13 +141,6 @@ export default function LoginPage() {
                     </button>
                 </form>
 
-                {/* Demo hint */}
-                <div style={{ marginTop: '20px', background: 'rgba(249,211,173,0.05)', border: '1px solid var(--color-glass-border)', borderRadius: '10px', padding: '10px 14px' }}>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', lineHeight: '1.5' }}>
-                        <span style={{ color: 'var(--color-accent-primary)', fontWeight: 600 }}>Demo:</span> Enter any email + any password (6+ chars) to log in.
-                    </p>
-                </div>
-
                 <div className="auth-divider" style={{ marginTop: '24px', marginBottom: '16px' }}>
                     <span>or</span>
                 </div>
