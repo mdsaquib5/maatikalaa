@@ -3,7 +3,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCart } from '@/store/useCart';
 import toast from 'react-hot-toast';
 import { FiChevronLeft, FiMinus, FiPlus, FiShoppingBag } from 'react-icons/fi';
@@ -14,6 +14,7 @@ export default function ProductDetailPage() {
     const { addToCart } = useCart();
     const [selectedSize, setSelectedSize] = useState('');
     const [quantity, setQuantity] = useState(1);
+    const [activeImg, setActiveImg] = useState('');
 
     const { data, isLoading } = useQuery({
         queryKey: ['product', id],
@@ -22,6 +23,13 @@ export default function ProductDetailPage() {
             return res.data;
         }
     });
+
+    // Set initial image
+    useEffect(() => {
+        if (data?.product?.images?.length > 0 && !activeImg) {
+            setActiveImg(data.product.images[0].url);
+        }
+    }, [data, activeImg]);
 
     if (isLoading) return <div className="full-page-center">Loading piece...</div>;
     if (!data?.product) return <div className="full-page-center">Piece not found</div>;
@@ -61,16 +69,22 @@ export default function ProductDetailPage() {
                     <div className="sticky-sidebar">
                         <div className="theme-card product-detail-image-main">
                             <img
-                                src={p.images[0]?.url || '/placeholder.png'}
+                                src={activeImg || p.images[0]?.url || '/placeholder.png'}
                                 alt={p.productName}
-                                className="w-full h-full"
+                                className="w-full h-full object-cover"
                             />
                         </div>
                         {p.images.length > 1 && (
                             <div className="product-detail__thumbs">
-                                {p.images.slice(1).map((img: any, i: number) => (
-                                    <div key={i} className="theme-card item-card-img--thumb product-detail-image-main">
-                                        <img src={img.url} alt="" className="w-full h-full" />
+                                {p.images.map((img: any, i: number) => (
+                                    <div 
+                                        key={img.url || i} 
+                                        onClick={() => setActiveImg(img.url)}
+                                        className={`theme-card item-card-img--thumb product-detail-image-main cursor-pointer transition-all ${
+                                            (activeImg === img.url || (!activeImg && i === 0)) ? 'ring-2 ring-accent scale-95 opacity-80' : 'hover:opacity-80'
+                                        }`}
+                                    >
+                                        <img src={img.url} alt="" className="w-full h-full object-cover" />
                                     </div>
                                 ))}
                             </div>
