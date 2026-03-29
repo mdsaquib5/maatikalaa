@@ -734,38 +734,6 @@ body {
     color: var(--color-accent-primary);
 }
 
-.product-detail__thumbs {
-    display: flex;
-    gap: 12px;
-    margin-top: 24px;
-    flex-wrap: wrap;
-}
-
-.product-detail__thumb {
-    cursor: pointer;
-    width: 80px !important;
-    height: 80px !important;
-    padding: 6px !important;
-    border: 2px solid transparent !important;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
-.product-detail__thumb:hover {
-    border-color: rgba(249, 211, 173, 0.4) !important;
-    transform: translateY(-2px);
-    background: rgba(255, 255, 255, 0.05) !important;
-}
-
-.product-detail__thumb--active {
-    border-color: var(--color-accent-primary) !important;
-    background: rgba(249, 211, 173, 0.08) !important;
-    transform: translateY(-2px);
-}
-
-.rounded-20 {
-    border-radius: 20px !important;
-}
-
 .divider-line {
     height: 1px;
     background: var(--color-glass-border);

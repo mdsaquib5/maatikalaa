@@ -27,7 +27,6 @@ export default function ProductDetailPage() {
     if (!data?.product) return <div className="full-page-center">Piece not found</div>;
 
     const p = data.product;
-    const [activeImage, setActiveImage] = useState(p.images[0]?.url || '/placeholder.png');
 
     const handleAddToCart = () => {
         if (p.sizes?.length > 0 && !selectedSize) {
@@ -62,20 +61,16 @@ export default function ProductDetailPage() {
                     <div className="sticky-sidebar">
                         <div className="theme-card product-detail-image-main">
                             <img
-                                src={activeImage}
+                                src={p.images[0]?.url || '/placeholder.png'}
                                 alt={p.productName}
-                                className="w-full h-full object-cover rounded-20"
+                                className="w-full h-full"
                             />
                         </div>
                         {p.images.length > 1 && (
                             <div className="product-detail__thumbs">
-                                {p.images.map((img: any, i: number) => (
-                                    <div 
-                                        key={i} 
-                                        onClick={() => setActiveImage(img.url)}
-                                        className={`theme-card item-card-img--thumb product-detail__thumb ${activeImage === img.url ? 'product-detail__thumb--active' : ''}`}
-                                    >
-                                        <img src={img.url} alt="" className="w-full h-full object-cover" />
+                                {p.images.slice(1).map((img: any, i: number) => (
+                                    <div key={i} className="theme-card item-card-img--thumb product-detail-image-main">
+                                        <img src={img.url} alt="" className="w-full h-full" />
                                     </div>
                                 ))}
                             </div>
