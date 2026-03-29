@@ -9,7 +9,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { MdCloudUpload, MdClose, MdAddBox, MdImage } from 'react-icons/md';
 
-const SIZES = ['S', 'M', 'L', 'XL', 'XXL', 'FREE SIZE'] as const;
+const SIZES = ['S', 'M', 'L', 'XL', 'XXL'] as const;
 
 export default function AddProductPage() {
     const { isAuthenticated } = useSellerAuth();
@@ -60,19 +60,19 @@ export default function AddProductPage() {
             toast.error('Max 4 images allowed.');
             return;
         }
-        
+
         const toProcess = Array.from(files).slice(0, remaining);
         toProcess.forEach(file => {
             if (!file.type.startsWith('image/')) return;
-            
+
             // Check file size (2MB = 2 * 1024 * 1024 bytes)
             if (file.size > 2 * 1024 * 1024) {
                 toast.error(`${file.name} is larger than 2MB. Please upload smaller images.`);
                 return;
             }
-            
+
             setImageFiles(prev => [...prev, file]);
-            
+
             const reader = new FileReader();
             reader.onload = e => {
                 setImagePreviews(prev => [...prev, e.target?.result as string]);
@@ -112,27 +112,27 @@ export default function AddProductPage() {
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
-        
+
         const formData = new FormData();
         formData.append('productName', name.trim());
         formData.append('description', description.trim());
         formData.append('price', price);
         formData.append('stock', stock);
         formData.append('hotProduct', String(hotProduct));
-        
+
         selectedSizes.forEach(size => {
             formData.append('sizes', size);
         });
-        
+
         imageFiles.forEach(file => {
             formData.append('images', file);
         });
-        
+
         mutation.mutate(formData);
     };
 
     if (!isAuthenticated) return null;
-    
+
     const loading = mutation.isPending;
 
     return (
