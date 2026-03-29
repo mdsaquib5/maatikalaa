@@ -17,7 +17,7 @@ const navLinks = [
 
 const Header = () => {
     const pathname = usePathname();
-    const { user, isAuthenticated, clearAuth } = useAuth();
+    const { user, isAuthenticated, _hasHydrated, clearAuth } = useAuth();
     const { items } = useCart();
     const [scrolled, setScrolled] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
@@ -103,7 +103,9 @@ const Header = () => {
                     </Link>
 
                     <div className="header__auth-desktop">
-                        {isAuthenticated ? (
+                        {!_hasHydrated ? (
+                             <div className="header__nav-link opacity-50">Loading...</div>
+                        ) : isAuthenticated ? (
                             <div className="header__user-actions">
                                 <Link href="/orders" className="header__nav-link" title="My Orders">
                                     <FiUser size={20} />
@@ -148,7 +150,9 @@ const Header = () => {
                             </Link>
                         </li>
                         <li className="header__drawer-item" style={{ animationDelay: `${(navLinks.length + 1) * 0.07}s` }}>
-                            {isAuthenticated ? (
+                            {!_hasHydrated ? (
+                                <div className="header__drawer-link opacity-50">Loading...</div>
+                            ) : isAuthenticated ? (
                                 <div className="header__drawer-actions">
                                     <Link href="/orders" className="header__drawer-link" onClick={() => handleNavClick('/orders')}>
                                         <span className="header__drawer-num">0{navLinks.length + 2}</span>

@@ -10,6 +10,7 @@ interface User {
 interface AuthState {
     user: User | null;
     isAuthenticated: boolean;
+    _hasHydrated: boolean;
     setAuth: (user: User) => void;
     clearAuth: () => void;
 }
@@ -19,11 +20,15 @@ export const useAuth = create<AuthState>()(
         (set) => ({
             user: null,
             isAuthenticated: false,
+            _hasHydrated: false,
             setAuth: (user) => set({ user, isAuthenticated: true }),
             clearAuth: () => set({ user: null, isAuthenticated: false }),
         }),
         {
             name: 'user-auth',
+            onRehydrateStorage: () => (state) => {
+                if (state) state._hasHydrated = true;
+            },
         }
     )
 );
